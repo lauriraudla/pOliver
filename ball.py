@@ -1,6 +1,8 @@
 import cv2
 import json
 import serial
+import vision_test
+import omni_movement
 
 kernel = 3
 
@@ -12,9 +14,10 @@ except FileNotFoundError:
 
 color = "green"
 
-left = 'sd:10:10:10 \n'
-right = 'sd:-10:-10:-10 \n'
-brrr= 'sd:25:25:25 \n'
+right = 'sd:7:7:7 \n'
+left = 'sd:-7:-7:-7 \n'
+brrr = 'sd:10:10:10 \n'
+stop = 'sd:0:0:0 \n'
 
 ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
 
@@ -32,16 +35,16 @@ blobparams.filterByColor = False
 blobparams.filterByConvexity = False
 blobparams.filterByInertia = False
 blobparams.filterByArea = True
-blobparams.minArea = 100
+blobparams.minArea = 50
 blobparams.maxArea = 10000
 blobparams.minDistBetweenBlobs = 4000
 detector = cv2.SimpleBlobDetector_create(blobparams)
 
-cap = cv2.VideoCapture(1)
+cap = vision_test.imageCapRS2()
 
-while cap.isOpened():
+while True:
     # 1. OpenCV gives you a BGR image
-    _, bgr = cap.read()
+    bgr = cap.getFrame()
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
 
     #cv2.imshow("hsv", hsv)
@@ -54,26 +57,35 @@ while cap.isOpened():
     #width 640
     try:
         ball = pt[0][0]
-        if ball < 290:
+        if ball < 280:
             print("right go brrrrrrrrrr")
-            ser.write(right.encode())
+            #ser.write(right.encode())
+            omni_movement.omni_move(2, 12)
             #right
-        if ball > 350:
+        elif ball > 360:
             print("left go brrrrrrrrrr")
-            ser.write(left.encode())
+            # ser.write(left.encode())
+            omni_movement.omni_move(0, -60)
             #left
+        else:
+            ser.write(stop.encode())
+
     except:
         print("spin go brrrrrrrrr")
         ser.write(brrr.encode())
         #suurem pööre
+
+    while (ser.inWaiting()):
+        print(ser.read())
+
     for x in pt:
         cv2.putText(mask, (str(x[0]) + " " + str(x[1])), (int(x[0]), int(x[1])), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     (200, 50, 69), 2)
 
-    cv2.imshow("mask", mask)
 
     key = cv2.waitKey(10)
     if key & 0xFF == ord("q"):
+        cap.setStopped(False)
         break
 
-cap.release()
+cv2.destroyAllWindows()
