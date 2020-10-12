@@ -3,6 +3,7 @@ import json
 import serial
 import vision_test
 import omni_movement
+import time
 
 kernel = 3
 
@@ -19,7 +20,7 @@ left = 'sd:-7:-7:-7 \n'
 brrr = 'sd:10:10:10 \n'
 stop = 'sd:0:0:0 \n'
 
-ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+#ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
 
 if color in saved_colors:
     filters = saved_colors[color]
@@ -45,8 +46,9 @@ cap = vision_test.imageCapRS2()
 while True:
     # 1. OpenCV gives you a BGR image
     bgr = cap.getFrame()
+    #cv2.imshow("bgr", bgr)
+    # 2. BGR -> HSV
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-
     #cv2.imshow("hsv", hsv)
     hsv = cv2.blur(hsv, (kernel, kernel))
     # 3. Use filters on HSV image
@@ -60,28 +62,31 @@ while True:
         if ball < 280:
             print("right go brrrrrrrrrr")
             #ser.write(right.encode())
-            omni_movement.omni_move(2, 12)
+            omni_movement.turnRight()
             #right
         elif ball > 360:
             print("left go brrrrrrrrrr")
-            # ser.write(left.encode())
-            omni_movement.omni_move(0, -60)
+            #ser.write(left.encode())
+            omni_movement.turnLeft()
             #left
         else:
-            ser.write(stop.encode())
+            print("else")
+            omni_movement.omni_move(12, -90)
+            #ser.write(stop.encode())
 
     except:
         print("spin go brrrrrrrrr")
-        ser.write(brrr.encode())
-        #suurem pööre
+        omni_movement.turnFast()
+        # suurem pööre
 
-    while (ser.inWaiting()):
-        print(ser.read())
+    #while (ser.inWaiting()):
+        #print(ser.read())
 
     for x in pt:
         cv2.putText(mask, (str(x[0]) + " " + str(x[1])), (int(x[0]), int(x[1])), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     (200, 50, 69), 2)
 
+    cv2.imshow("mask", mask)
 
     key = cv2.waitKey(10)
     if key & 0xFF == ord("q"):
