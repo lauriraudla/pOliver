@@ -24,9 +24,9 @@ pidControlFrequency = 60  # Hz
 def write(move):
     print(move)
     ser.write(move.encode('ascii'))
-    print("sent")
+    #print("sent")
     while ser.inWaiting():
-        print(ser.read())
+        (ser.read())
 
 def turnRight():
     move = 'sd:-7:-7:-7 \n'

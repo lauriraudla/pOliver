@@ -1,6 +1,6 @@
 import cv2
 import json
-from pOliver import omni_movement, vision_test
+from pOliver import omni_movement, distmeasurevisiontest
 
 kernel = 3
 
@@ -38,7 +38,7 @@ blobparams.maxArea = 10000
 blobparams.minDistBetweenBlobs = 4000
 detector = cv2.SimpleBlobDetector_create(blobparams)
 
-cap = vision_test.imageCapRS2()
+cap = distmeasurevisiontest.imageCapRS2()
 
 while True:
     # 1. OpenCV gives you a BGR image
@@ -68,8 +68,15 @@ while True:
             #left
         else:
             print("else")
-            omni_movement.omni_move(12, -90)
-            #ser.write(stop.encode())
+            try:
+                dist = cap.getDistance(int(pt[0][0]), int(pt[0][1]))
+                print(dist)
+                if dist > 0.6:
+                    omni_movement.omni_move(24, -90)
+            except:
+                print("puutsad")
+                pass
+            # #ser.write(stop.encode())
 
     except:
         print("spin go brrrrrrrrr")

@@ -46,12 +46,12 @@ class imageCapRS2:
             depth_frame = self.frames.get_depth_frame()
             width = depth_frame.get_width()
             height = depth_frame.get_height()
-            for a in range(3):
-                for b in range(3):
-                    out += depth_frame.get_distance(int(x+a),int(y+b))
+            # for a in range(3):
+            #     for b in range(3):
+            #         out += depth_frame.get_distance(int(x+a),int(y+b))
             dist_to_center = depth_frame.get_distance(int(x), int(y))
             out = out/9
-            return out,dist_to_center
+            return dist_to_center
         except:
             pass
 

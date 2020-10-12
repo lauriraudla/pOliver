@@ -35,6 +35,23 @@ class imageCapRS2:
     def getFrame(self):
         return self.currentFrame
 
+    def getDistance(self,x,y):
+        out = 0
+        try:
+            self.frames = self.pipeline.wait_for_frames()
+            depth_frame = self.frames.get_depth_frame()
+            for a in range(3):
+                for b in range(3):
+                    #out += depth_frame.get_distance(int(x)+a,int(y)+b)
+                    pass
+            dist_to_center = depth_frame.get_distance(int(x), int(y))
+            out = out/9
+            print(out)
+            return dist_to_center
+        except:
+            print("pepo")
+            pass
+
     def setStopped(self, stopped):
         self.pipeline.stop()
         self.running = stopped

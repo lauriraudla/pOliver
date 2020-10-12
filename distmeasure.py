@@ -1,9 +1,9 @@
 import cv2
-import vision_test
+import distmeasurevisiontest
 
 
 
-image_thread = vision_test.imageCapRS2()
+image_thread = distmeasurevisiontest.imageCapRS2()
 
 while True:
 
