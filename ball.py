@@ -1,7 +1,9 @@
 import cv2
 import json
+import numpy as np
 from pOliver import omni_movement, distmeasurevisiontest
 
+kernel1 = np.ones((5,5), np.uint8)
 kernel = 3
 
 try:
@@ -24,38 +26,79 @@ if color in saved_colors:
 else:
     filters = {
         "min": [0, 0, 0], # HSV minimum values
-        "max": [179, 255, 255] # HSV maximum values
+        "max": [255, 255, 255] # HSV maximum values
     }
 
 #blobdetector
-blobparams = cv2.SimpleBlobDetector_Params()
-blobparams.filterByColor = False
-blobparams.filterByConvexity = False
-blobparams.filterByInertia = False
-blobparams.filterByArea = True
-blobparams.minArea = 50
-blobparams.maxArea = 10000
-blobparams.minDistBetweenBlobs = 4000
-detector = cv2.SimpleBlobDetector_create(blobparams)
+# blobparams = cv2.SimpleBlobDetector_Params()
+# blobparams.filterByColor = False
+# blobparams.filterByConvexity = False
+# blobparams.filterByInertia = False
+# blobparams.filterByArea = True
+# blobparams.minArea = 50
+# blobparams.maxArea = 10000
+# blobparams.minDistBetweenBlobs = 4000
+# detector = cv2.SimpleBlobDetector_create(blobparams)
 
-cap = distmeasurevisiontest.imageCapRS2()
+# cap = distmeasurevisiontest.imageCapRS2()
+cap = cv2.VideoCapture(4)
 
+cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
+cap.set(cv2.CAP_PROP_EXPOSURE, 600.0)
+cap.set(cv2.CAP_PROP_AUTO_WB, 0)
 while True:
-    # 1. OpenCV gives you a BGR image
-    bgr = cap.getFrame()
-    #cv2.imshow("bgr", bgr)
-    # 2. BGR -> HSV
-    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-    #cv2.imshow("hsv", hsv)
-    hsv = cv2.blur(hsv, (kernel, kernel))
-    # 3. Use filters on HSV image
-    mask = cv2.inRange(hsv, tuple(filters["min"]), tuple(filters["max"]))
-
-    kp = detector.detect(mask)
-    pt = cv2.KeyPoint_convert(kp)
+    # # 1. OpenCV gives you a BGR image
+    # bgr = cap.getFrame()
+    # #cv2.imshow("bgr", bgr)
+    # # 2. BGR -> HSV
+    # hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    # #cv2.imshow("hsv", hsv)
+    # hsv = cv2.blur(hsv, (kernel, kernel))
+    # # 3. Use filters on HSV image
+    # mask = cv2.inRange(hsv, tuple(filters["min"]), tuple(filters["max"]))
+    # # Old way of using random keypoints instead of circles
+    # # kp = detector.detect(mask)
+    # # pt = cv2.KeyPoint_convert(kp)
+    # # 4. bilateral filtering on mask
+    # bilateral = cv2.bilateralFilter(mask, 5, 175, 175)
+    # # 4.1. opening morphology on filtered image
+    # opened = cv2.morphologyEx(bilateral, cv2.MORPH_OPEN, kernel1)
+    # # 5. Circle detection
+    # circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 5, 100)
+    # # 6. basing rest of the movement on the detected circles.
+    # pt = circles
     #width 640
+
+    # 1. OpenCV gives you a BGR image
+    _, bgr = cap.read()
+    # 2. Convert BGR to HSV where color distributions are better
+    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    # 2.1 Cut out bottom of frame
+    cut = hsv[0:640][0:440]
+    # 3. apply blur
+    blur = cv2.blur(cut, (3, 3))
+    # 4. Use filters on HSV image
+    mask = cv2.inRange(blur, tuple(filters["min"]), tuple(filters["max"]))
+    bilateral = cv2.bilateralFilter(mask, 5, 175, 175)
+    # 5. morphological actions
+    opened = cv2.morphologyEx(bilateral, cv2.MORPH_OPEN, kernel1)
+    # detect circles
+    circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 1, minDist=100, param1=300, param2=0.85, minRadius=2, maxRadius=50)
+    # draw circles
+    if circles is not None:
+        pt = np.round(circles[0, :]).astype("int")
+        for (x, y, r) in pt:
+            cv2.circle(hsv, (x, y), r, (0, 255, 0), 4)
+
+        cv2.imshow("mask", hsv)
+
+
+    pt = circles
     try:
-        ball = pt[0][0]
+        print(pt)
+        ball = pt[0][0][0]
+        height = pt[0][0][1]
+        print(ball)
         if ball < 280:
             print("right go brrrrrrrrrr")
             #ser.write(right.encode())
@@ -67,31 +110,32 @@ while True:
             omni_movement.turnLeft()
             #left
         else:
-            print("else")
+            #print("else")
             try:
-                dist = cap.getDistance(int(pt[0][0]), int(pt[0][1]))
-                print(dist)
-                if dist > 0.6:
+                # dist = cap.getDistance(int(pt[0][0]), int(pt[0][1]))
+                # print(dist)
+                if height < 300:
                     omni_movement.omni_move(24, -90)
+                else:
+                    omni_movement.omni_move(0, -90)
             except:
                 print("puutsad")
                 pass
             # #ser.write(stop.encode())
 
     except:
-        print("spin go brrrrrrrrr")
+        #print("spin go brrrrrrrrr")
         omni_movement.turnFast()
         # suurem pööre
 
     #while (ser.inWaiting()):
         #print(ser.read())
 
-    for x in pt:
-        cv2.putText(mask, (str(x[0]) + " " + str(x[1])), (int(x[0]), int(x[1])), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                    (200, 50, 69), 2)
+    #for x in pt:
+    #    cv2.putText(mask, (str(x[0]) + " " + str(x[1])), (int(x[0]), int(x[1])), cv2.FONT_HERSHEY_SIMPLEX, 1,
+    #               (200, 50, 69), 2)
 
-    cv2.imshow("mask", mask)
-
+    cv2.imshow("tresh", opened)
     key = cv2.waitKey(10)
     if key & 0xFF == ord("q"):
         cap.setStopped(False)
