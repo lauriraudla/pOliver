@@ -10,7 +10,7 @@ import json
 from functools import partial
 import numpy as np
 
-kernel=np.ones((5,5), np.uint8)
+kernel=np.ones((3,3), np.uint8)
 
 # Load saved color values from colors.json
 try:
@@ -57,7 +57,7 @@ cv2.createTrackbar("v_max", "mask", filters["max"][2], 255, partial(update_range
 # Start video capture
 cap = cv2.VideoCapture(4)
 cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
-cap.set(cv2.CAP_PROP_EXPOSURE, 600.0)
+cap.set(cv2.CAP_PROP_EXPOSURE, 1200.0)
 cap.set(cv2.CAP_PROP_AUTO_WB, 0)
 while cap.isOpened():
     # 1. OpenCV gives you a BGR image
@@ -73,8 +73,9 @@ while cap.isOpened():
     mask = cv2.inRange(hsv, tuple(filters["min"]), tuple(filters["max"]))
     bilateral = cv2.bilateralFilter(mask, 5, 175, 175)
     opened = cv2.morphologyEx(bilateral, cv2.MORPH_OPEN, kernel)
+    #blur = cv2.
 
-    circles = cv2.HoughCircles(bilateral, cv2.HOUGH_GRADIENT, 5, 100)
+    circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 5, 100)
 
     cv2.imshow("bilateral", opened)
 

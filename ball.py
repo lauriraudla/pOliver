@@ -3,7 +3,7 @@ import json
 import numpy as np
 from pOliver import omni_movement, distmeasurevisiontest
 
-kernel1 = np.ones((5,5), np.uint8)
+kernel1 = np.ones((3,3), np.uint8)
 kernel = 3
 
 try:
@@ -74,7 +74,7 @@ while True:
     # 2. Convert BGR to HSV where color distributions are better
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     # 2.1 Cut out bottom of frame
-    cut = hsv[0:640][0:440]
+    cut = hsv[0:800][0:400]
     # 3. apply blur
     blur = cv2.blur(cut, (3, 3))
     # 4. Use filters on HSV image
@@ -83,14 +83,15 @@ while True:
     # 5. morphological actions
     opened = cv2.morphologyEx(bilateral, cv2.MORPH_OPEN, kernel1)
     # detect circles
-    circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 1, minDist=100, param1=300, param2=0.85, minRadius=2, maxRadius=50)
+    circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 1, minDist=100, param1=400, param2=0.99, minRadius=2, maxRadius=50)
     # draw circles
     if circles is not None:
         pt = np.round(circles[0, :]).astype("int")
         for (x, y, r) in pt:
-            cv2.circle(hsv, (x, y), r, (0, 255, 0), 4)
+            cv2.circle(cut, (x, y), r, (0, 255, 0), 4)
 
-        cv2.imshow("mask", hsv)
+    cv2.imshow("mask", cut)
+    cv2.imshow("bgr", bgr)
 
 
     pt = circles
