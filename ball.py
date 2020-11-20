@@ -1,9 +1,9 @@
 import cv2
 import json
 import numpy as np
-from pOliver import omni_movement, distmeasurevisiontest
+from pOliver import omni_movement, vision_test
 
-kernel1 = np.ones((3,3), np.uint8)
+kernel1 = np.ones((1,1), np.uint8)
 kernel = 3
 
 try:
@@ -28,7 +28,7 @@ else:
         "min": [0, 0, 0], # HSV minimum values
         "max": [255, 255, 255] # HSV maximum values
     }
-
+green = saved_colors["green"]
 #blobdetector
 # blobparams = cv2.SimpleBlobDetector_Params()
 # blobparams.filterByColor = False
@@ -40,12 +40,13 @@ else:
 # blobparams.minDistBetweenBlobs = 4000
 # detector = cv2.SimpleBlobDetector_create(blobparams)
 
-# cap = distmeasurevisiontest.imageCapRS2()
-cap = cv2.VideoCapture(4)
+cap1 = vision_test.imageCapRS2()
+cap = cv2.VideoCapture(cap1.getFrame())
 
-cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
-cap.set(cv2.CAP_PROP_EXPOSURE, 600.0)
-cap.set(cv2.CAP_PROP_AUTO_WB, 0)
+# cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
+# cap.set(cv2.CAP_PROP_EXPOSURE, 120.0)
+# cap.set(cv2.CAP_PROP_AUTO_WB, 0)
+# cap.set(cv2.CAP_PROP_WB_TEMPERATURE, 5700)
 while True:
     # # 1. OpenCV gives you a BGR image
     # bgr = cap.getFrame()
@@ -75,6 +76,7 @@ while True:
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     # 2.1 Cut out bottom of frame
     cut = hsv[0:800][0:400]
+    #findBall(cut,green)
     # 3. apply blur
     blur = cv2.blur(cut, (3, 3))
     # 4. Use filters on HSV image
@@ -83,7 +85,7 @@ while True:
     # 5. morphological actions
     opened = cv2.morphologyEx(bilateral, cv2.MORPH_OPEN, kernel1)
     # detect circles
-    circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 1, minDist=100, param1=400, param2=0.99, minRadius=2, maxRadius=50)
+    circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 1, minDist=100, param1=400, param2=1, minRadius=3, maxRadius=50)
     # draw circles
     if circles is not None:
         pt = np.round(circles[0, :]).astype("int")
@@ -116,16 +118,18 @@ while True:
                 # dist = cap.getDistance(int(pt[0][0]), int(pt[0][1]))
                 # print(dist)
                 if height < 300:
-                    omni_movement.omni_move(24, -90)
+                    omni_movement.omni_move(40, -90)
+                    print("if")
                 else:
                     omni_movement.omni_move(0, -90)
+                    print("else")
             except:
                 print("puutsad")
                 pass
             # #ser.write(stop.encode())
 
     except:
-        #print("spin go brrrrrrrrr")
+        print("spin go brrrrrrrrr")
         omni_movement.turnFast()
         # suurem pööre
 
