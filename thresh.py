@@ -9,9 +9,12 @@ import cv2
 import json
 from functools import partial
 import numpy as np
-from pOliver import vision_test, image_thread
+#from pOliver import vision_test, image_thread
 
-kernel=np.ones((1, 1), np.uint8)
+width = 1280
+height = 720
+
+kernel=np.ones((4, 4), np.uint8)
 
 # Load saved color values from colors.json
 try:
@@ -56,14 +59,17 @@ cv2.createTrackbar("s_max", "mask", filters["max"][1], 255, partial(update_range
 cv2.createTrackbar("v_max", "mask", filters["max"][2], 255, partial(update_range, "max", 2))
 
 # Start video capture
+cam = cv2.VideoCapture(4)
+cam.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
+cam.set(cv2.CAP_PROP_EXPOSURE, 120.0)
+cam.set(cv2.CAP_PROP_AUTO_WB, 0)
+cam.set(cv2.CAP_PROP_WB_TEMPERATURE, 5700)
+cam.set(3, width)
+cam.set(4, height)
 
-cam = image_thread.camThread("nimi", 4)
-rval, cap = 69
-
-while rval:
+while True:
     # 1. OpenCV gives you a BGR image
-    rval, cap = cam
-    bgr = cap
+    _, bgr = cam.read()
     #cv2.imshow("bgr", bgr)
 
     # 2. Convert BGR to HSV where color distributions are better
@@ -91,4 +97,4 @@ while rval:
         save()
         break
 
-cap.release()
+cam.release()

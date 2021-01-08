@@ -1,10 +1,15 @@
 import cv2
 import json
 import numpy as np
-from pOliver import omni_movement, vision_test
+import omni_movement
+import time
 
-kernel1 = np.ones((1,1), np.uint8)
+kernel1 = np.ones((4,4), np.uint8)
 kernel = 3
+#Video resolution
+width = 1280
+height = 720
+
 
 try:
     with open("colors.json", "r") as f:
@@ -14,10 +19,7 @@ except FileNotFoundError:
 
 color = "green"
 
-right = 'sd:7:7:7 \n'
-left = 'sd:-7:-7:-7 \n'
-brrr = 'sd:10:10:10 \n'
-stop = 'sd:0:0:0 \n'
+state = 0
 
 #ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
 
@@ -29,70 +31,57 @@ else:
         "max": [255, 255, 255] # HSV maximum values
     }
 green = saved_colors["green"]
-#blobdetector
-# blobparams = cv2.SimpleBlobDetector_Params()
-# blobparams.filterByColor = False
-# blobparams.filterByConvexity = False
-# blobparams.filterByInertia = False
-# blobparams.filterByArea = True
-# blobparams.minArea = 50
-# blobparams.maxArea = 10000
-# blobparams.minDistBetweenBlobs = 4000
-# detector = cv2.SimpleBlobDetector_create(blobparams)
 
-cap1 = vision_test.imageCapRS2()
-cap = cv2.VideoCapture(cap1.getFrame())
+# Start video capture
+cam = cv2.VideoCapture(4)
+cam.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
+cam.set(cv2.CAP_PROP_EXPOSURE, 120.0)
+cam.set(cv2.CAP_PROP_AUTO_WB, 0)
+cam.set(cv2.CAP_PROP_WB_TEMPERATURE, 5700)
+cam.set(3, width)
+cam.set(4, height)
 
-# cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
-# cap.set(cv2.CAP_PROP_EXPOSURE, 120.0)
-# cap.set(cv2.CAP_PROP_AUTO_WB, 0)
-# cap.set(cv2.CAP_PROP_WB_TEMPERATURE, 5700)
+fps = 0
+time0 = 0
+time1 = 0
+
 while True:
-    # # 1. OpenCV gives you a BGR image
-    # bgr = cap.getFrame()
-    # #cv2.imshow("bgr", bgr)
-    # # 2. BGR -> HSV
-    # hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-    # #cv2.imshow("hsv", hsv)
-    # hsv = cv2.blur(hsv, (kernel, kernel))
-    # # 3. Use filters on HSV image
-    # mask = cv2.inRange(hsv, tuple(filters["min"]), tuple(filters["max"]))
-    # # Old way of using random keypoints instead of circles
-    # # kp = detector.detect(mask)
-    # # pt = cv2.KeyPoint_convert(kp)
-    # # 4. bilateral filtering on mask
-    # bilateral = cv2.bilateralFilter(mask, 5, 175, 175)
-    # # 4.1. opening morphology on filtered image
-    # opened = cv2.morphologyEx(bilateral, cv2.MORPH_OPEN, kernel1)
-    # # 5. Circle detection
-    # circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 5, 100)
-    # # 6. basing rest of the movement on the detected circles.
-    # pt = circles
-    #width 640
+
 
     # 1. OpenCV gives you a BGR image
-    _, bgr = cap.read()
+    _, bgr = cam.read()
+    time1 = time0
+    time0 = time.time()
+    fps = 1/(time0 - time1)
+    print(fps)
     # 2. Convert BGR to HSV where color distributions are better
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     # 2.1 Cut out bottom of frame
-    cut = hsv[0:800][0:400]
+    #cut = hsv[0:800][0:400]
     #findBall(cut,green)
     # 3. apply blur
-    blur = cv2.blur(cut, (3, 3))
+    blur = cv2.blur(hsv, (3, 3))
     # 4. Use filters on HSV image
     mask = cv2.inRange(blur, tuple(filters["min"]), tuple(filters["max"]))
     bilateral = cv2.bilateralFilter(mask, 5, 175, 175)
     # 5. morphological actions
     opened = cv2.morphologyEx(bilateral, cv2.MORPH_OPEN, kernel1)
     # detect circles
-    circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 1, minDist=100, param1=400, param2=1, minRadius=3, maxRadius=50)
+    circles = cv2.HoughCircles(opened,
+                               cv2.HOUGH_GRADIENT_ALT,
+                               1,
+                               minDist=200,
+                               param1=300,
+                               param2=0.3,
+                               minRadius=1,
+                               maxRadius=75)
     # draw circles
     if circles is not None:
         pt = np.round(circles[0, :]).astype("int")
         for (x, y, r) in pt:
-            cv2.circle(cut, (x, y), r, (0, 255, 0), 4)
+            cv2.circle(bgr, (x, y), r, (0, 255, 0), 4)
 
-    cv2.imshow("mask", cut)
+    #cv2.imshow("mask", hsv)
     cv2.imshow("bgr", bgr)
 
 
@@ -102,27 +91,37 @@ while True:
         ball = pt[0][0][0]
         height = pt[0][0][1]
         print(ball)
-        if ball < 280:
+        if ball < 580:
             print("right go brrrrrrrrrr")
             #ser.write(right.encode())
-            omni_movement.turnRight()
+            if state != 1:
+                omni_movement.turnRight()
+                state = 1
             #right
-        elif ball > 360:
+        elif ball > 700:
             print("left go brrrrrrrrrr")
             #ser.write(left.encode())
-            omni_movement.turnLeft()
+            if state != 2:
+                omni_movement.turnLeft()
+                state = 2
             #left
         else:
             #print("else")
             try:
                 # dist = cap.getDistance(int(pt[0][0]), int(pt[0][1]))
                 # print(dist)
-                if height < 300:
-                    omni_movement.omni_move(40, -90)
-                    print("if")
+                if height < 380:
+                    #omni_movement.omni_move(40, -90)
+                    if state != 3:
+                        omni_movement.stop()
+                        state = 3
+                        print("if")
                 else:
-                    omni_movement.omni_move(0, -90)
-                    print("else")
+                    if state != 4:
+                        omni_movement.stop()
+                        state = 4
+                    #omni_movement.omni_move(0, -90)
+                        print("else")
             except:
                 print("puutsad")
                 pass
@@ -140,10 +139,10 @@ while True:
     #    cv2.putText(mask, (str(x[0]) + " " + str(x[1])), (int(x[0]), int(x[1])), cv2.FONT_HERSHEY_SIMPLEX, 1,
     #               (200, 50, 69), 2)
 
-    cv2.imshow("tresh", opened)
+    #cv2.imshow("tresh", opened)
     key = cv2.waitKey(10)
     if key & 0xFF == ord("q"):
-        cap.setStopped(False)
+        omni_movement.stop()
         break
 
 cv2.destroyAllWindows()

@@ -1,8 +1,8 @@
 import serial
 from math import cos, sqrt, atan2, floor, radians
-values = [25, 0, 0, 70, 0, 0, 0, 170]
+values = [25, 25, 0, 65, 55, 65, 0, 170]
 
-ser = serial.Serial('COM4', 115200, timeout=1)
+ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
 
 def write(move):
     print(move)
@@ -41,5 +41,10 @@ while True:
         elif change == 7:
             data = int(input("väärtus:"))
             values[change] = data
+    elif inp == "3":
+        values[3] = 65
+        values[4] = 65
+        values[5] = 65
+        write(values)
     else:
         break
