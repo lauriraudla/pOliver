@@ -28,7 +28,7 @@ def apply_ball_color_filter(hsv, basket=False):
         masked_img = cv2.inRange(hsv, basket_color_range["min"], basket_color_range["max"])
     else:
         masked_img = cv2.inRange(hsv, ball_color_range["min"], ball_color_range["max"])
-    kernel = np.ones((5, 5), np.uint8)
+    kernel = np.ones((4, 4), np.uint8)
     masked_img = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
     erosion = cv2.erode(masked_img, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)

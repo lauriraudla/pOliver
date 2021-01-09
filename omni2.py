@@ -43,9 +43,9 @@ def endThrow(values):
     values[6] = 0
     sendIt(values)
 
-def forward(values):
-    values[3] = 85
-    values[4] = 45
+def forward(values,speed):
+    values[3] = 65 + speed
+    values[4] = 65 - speed
     values[5] = 65
     sendIt(values)
 
@@ -56,11 +56,11 @@ def toBall(values,speed,ball):#kus ball on 2 elemendiline array: X ja Y
 
     values[3] = 65 + calculate_linear_velocity(speed, a_wheel_angle, movement_direction_forward,
                                                         mid_x, ball_X, ball_Y)
-    values[5] = 65 - calculate_linear_velocity(speed, b_wheel_angle, movement_direction_forward,
+    values[5] = 65 - calculate_linear_velocity(speed, c_wheel_angle, movement_direction_forward,
                                                        mid_x, ball_X, ball_Y)
-    values[4] = 65 + calculate_linear_velocity(speed, c_wheel_angle, movement_direction_forward,
+    values[4] = 65 + calculate_linear_velocity(speed, b_wheel_angle, movement_direction_forward,
                                                         mid_x, ball_X, ball_Y)
-    print(values)
+
     sendIt(values)
 
 def calculate_linear_velocity(wheel_speed, wheel_angle, direction, mid_x=None, X=None, Y=None):
