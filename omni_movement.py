@@ -7,7 +7,7 @@ values = [25, 25, 0, 70, 70, 70, 0, 170]
 # esimene parem 2
 # Serial setup
 
-ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
 
 # Variables:
 robotSpeedX = 2  # m/s

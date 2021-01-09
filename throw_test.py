@@ -5,6 +5,7 @@ from CountsPerSec import CountsPerSec
 from VideoGet import VideoGet
 from VideoShow import VideoShow
 import omni2
+import time
 
 def putIterationsPerSec(frame, iterations_per_sec):
     """
@@ -20,6 +21,8 @@ def threadBoth(source=4):
     video_getter = VideoGet(source).start()
     video_shower = VideoShow(video_getter.frame).start()
     cps = CountsPerSec().start()
+    rotatetime = 0
+    prevthrow = 0
 
     values = [25, 25, 0, 65, 55, 65, 0, 170]
     while True:
@@ -39,9 +42,21 @@ def threadBoth(source=4):
             pall = [x,y]
             if y < 450:
                 omni2.toBall(values,15,pall)
+                rotatetime = time.time()
             else:
                 try:
-                    omni2.ballRotate(values,20)
+                    if rotatetime-prevthrow < 5:
+                        print("a")
+                        rotatetime = time.time()
+                        omni2.ballRotate(values,20)
+                    else:
+                        omni2.startThrow(values,0)
+                        omni2.forward(values)
+                        time.sleep(2)
+                        omni2.endThrow(values)
+                        prevthrow = rotatetime
+                    print(rotatetime,prevthrow)
+
                 except:
                     print("puutsad")
                     pass
