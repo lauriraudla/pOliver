@@ -29,5 +29,6 @@ class VideoGet:
             else:
                 (self.grabbed, self.frame) = self.stream.read()
 
+
     def stop(self):
         self.stopped = True

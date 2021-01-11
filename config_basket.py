@@ -6,7 +6,7 @@ from ast import literal_eval
 src_dir = Path(__file__).parent
 
 # Important files
-config_filepath = src_dir.joinpath("config.ini")
+config_filepath = src_dir.joinpath("config_basket.ini")
 
 # INI parser
 parser = ConfigParser()

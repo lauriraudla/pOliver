@@ -1,12 +1,12 @@
 import cv2
 import numpy as np
 from threading import currentThread
-import config
+import config, config_basket
 
 # Get color ranges and noise removal kernels from config
 ball_color_range = config.get("colors", config.get("vision", "ball_color"))
 ball_noise_kernel = config.get("vision", "ball_noise_kernel")
-basket_color_range = config.get("colors", config.get("vision", "basket_color"))
+basket_color_range = config_basket.get("colors", config_basket.get("vision", "basket_color"))
 
 
 def apply_ball_color_filter(hsv, basket=False):
@@ -28,7 +28,7 @@ def apply_ball_color_filter(hsv, basket=False):
         masked_img = cv2.inRange(hsv, basket_color_range["min"], basket_color_range["max"])
     else:
         masked_img = cv2.inRange(hsv, ball_color_range["min"], ball_color_range["max"])
-    kernel = np.ones((4, 4), np.uint8)
+    kernel = np.ones((6, 6), np.uint8)
     masked_img = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
     erosion = cv2.erode(masked_img, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)
@@ -36,6 +36,7 @@ def apply_ball_color_filter(hsv, basket=False):
     # dilation = cv2.dilate(erosion, kernel, iterations=1)
     # dilation = masked_img
     cont, hie = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contour_img = cv2.drawContours(masked_img, cont, -1, (255, 0, 255))
     # print("cont", cont)
     try:
         max_cont = max(cont, key=cv2.contourArea)
@@ -63,6 +64,6 @@ def apply_ball_color_filter(hsv, basket=False):
     mask_basket = cv2.morphologyEx(mask_basket, cv2.MORPH_OPEN, kernel)"""
     # Only return the blob of the largest objects of the same color
 
-    return x, y, r, dilation
+    return x, y, r, contour_img
 
 

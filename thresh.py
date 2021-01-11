@@ -75,18 +75,14 @@ while True:
     # 2. Convert BGR to HSV where color distributions are better
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     #cv2.imshow("hsv", hsv)
-    hsv = cv2.blur(hsv, (3, 3))
-
-    # 3. Use filters on HSV image
-    mask = cv2.inRange(hsv, tuple(filters["min"]), tuple(filters["max"]))
-    bilateral = cv2.bilateralFilter(mask, 5, 175, 175)
-    opened = cv2.morphologyEx(bilateral, cv2.MORPH_OPEN, kernel)
-    #blur = cv2.
-
-    circles = cv2.HoughCircles(opened, cv2.HOUGH_GRADIENT, 5, 100)
+    masked_img = cv2.inRange(hsv, tuple(filters["min"]), tuple(filters["max"]))
+    kernel = np.ones((5, 5), np.uint8)
+    masked_img = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
+    erosion = cv2.erode(masked_img, kernel, iterations=1)
+    dilation = cv2.dilate(erosion, kernel, iterations=1)
 
     cv2.imshow("bgr", bgr)
-    cv2.imshow("bilateral", opened)
+    cv2.imshow("bilateral", dilation)
 
     key = cv2.waitKey(10)
 
