@@ -6,12 +6,16 @@ import config, config_basket
 # Get color ranges and noise removal kernels from config
 ball_color_range = config.get("colors", config.get("vision", "ball_color"))
 ball_noise_kernel = config.get("vision", "ball_noise_kernel")
-basket_color_range = config_basket.get("colors", config_basket.get("vision", "basket_color"))
+#basket_color_range = config.get("colors", config.get("vision", "basket_color"))
+edge_color_range = config.get("colors", config.get("vision", "bounds"))
 
 
-def apply_ball_color_filter(hsv, basket=False):
+def apply_ball_color_filter(hsv, basket=False, bounds = False):
     #print(ball_color_range)
     #print(hsv)
+
+    basket_color_range = config.get("colors", config.get("vision", "basket_color"))
+
     """
         args:
             hsv image
@@ -21,14 +25,16 @@ def apply_ball_color_filter(hsv, basket=False):
             3) [x, y] for the coordinates of the ball
             4) [x, y] for the coordinates of the basket
     """
-
     # hsv = cv2.blur(hsv, (2,2))
     #print(ball_color_range)
     if basket:
         masked_img = cv2.inRange(hsv, basket_color_range["min"], basket_color_range["max"])
+    elif bounds:
+        #masked_img = cv2.inRange(hsv, edge_color_range["min"], edge_color_range["max"])
+        pass
     else:
         masked_img = cv2.inRange(hsv, ball_color_range["min"], ball_color_range["max"])
-    kernel = np.ones((6, 6), np.uint8)
+    kernel = np.ones((5, 5), np.uint8)
     masked_img = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
     erosion = cv2.erode(masked_img, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)

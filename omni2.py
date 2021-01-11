@@ -27,7 +27,7 @@ def ballRotate(values, speed, pit):
     values[3] = 65 - pit
     values[4] = 65 - pit
     values[5] = 65 + speed
-    print(values)
+    #print(values)
     sendIt(values)
 
 def ballRotateExact(values, speed):
@@ -136,13 +136,13 @@ def pidBallCenter(sisend, integral, derivative, err_prev):
     P = 0.03
     I = 0.0
     D = 0
-    print(sisend, err_prev)
+    #print(sisend, err_prev)
     # sisend on error keskkohast
     error = 640 - sisend
     integral += error
     derivative = error - err_prev
     err_prev = error
     pööramiskiirus = P * error + integral * I + derivative * D
-    print(int(pööramiskiirus))
+    #print(int(pööramiskiirus))
 
     return int(0 - pööramiskiirus)

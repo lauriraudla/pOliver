@@ -13,6 +13,7 @@ class VideoGet:
         self.stream.set(cv2.CAP_PROP_EXPOSURE, 120.0)
         self.stream.set(cv2.CAP_PROP_AUTO_WB, 0)
         self.stream.set(cv2.CAP_PROP_WB_TEMPERATURE, 5700)
+        self.stream.set(cv2.CAP_PROP_FPS, 60)
         self.stream.set(3, 1280)
         self.stream.set(4, 720)
         (self.grabbed, self.frame) = self.stream.read()

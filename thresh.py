@@ -9,6 +9,8 @@ import cv2
 import json
 from functools import partial
 import numpy as np
+from VideoGet import VideoGet
+import config
 #from pOliver import vision_test, image_thread
 
 width = 1280
@@ -17,72 +19,92 @@ height = 720
 kernel=np.ones((4, 4), np.uint8)
 
 # Load saved color values from colors.json
-try:
-    with open("colors.json", "r") as f:
-        saved_colors = json.loads(f.read())
-except FileNotFoundError:
-    saved_colors = {}
 
-print("Saved color values: ", saved_colors)
+#print("Saved color values: ", saved_colors)
 color = input("What color to threshold: ")
+try:
+    with open("config.ini", "r") as f:
+        saved_color = config.get("colors", color)
+        print(saved_color)
+except FileNotFoundError:
+    saved_color = {}
+
+
 
 # Read color values from colors.json or initialize new values
-if color in saved_colors:
-    filters = saved_colors[color]
+if saved_color == config.get("colors", color):
+    filters = saved_color
+    print(filters["min"])
+    print(filters["min"][1])
 else:
     filters = {
-        "min": [0, 0, 0], # HSV minimum values
-        "max": [255, 255, 255] # HSV maximum values
+        "min": (0, 0, 0), # HSV minimum values
+        "max": (255, 255, 255) # HSV maximum values
     }
 
 def save():
-    saved_colors[color] = filters
+    config.set("colors", color, filters)
+    config.save()
 
-    with open("colors.json", "w") as f:
-        f.write(json.dumps(saved_colors))
 
-def update_range(edge, channel, value):
-    # edge = "min" or "max"
-    # channel = 0, 1, 2 (H, S, V)
-    # value = new slider value
-    filters[edge][channel] = value
+def update_range(i, j, value):
+    values = list(saved_color[i])
+    values[j] = value
+    saved_color[i] = tuple(values)
 
-# Create sliders to filter colors from image
-cv2.namedWindow("mask")
 
-# createTrackbar(name, window name, initial value, max value, function to call on change)
-cv2.createTrackbar("h_min", "mask", filters["min"][0], 255, partial(update_range, "min", 0))
-cv2.createTrackbar("s_min", "mask", filters["min"][1], 255, partial(update_range, "min", 1))
-cv2.createTrackbar("v_min", "mask", filters["min"][2], 255, partial(update_range, "min", 2))
-cv2.createTrackbar("h_max", "mask", filters["max"][0], 255, partial(update_range, "max", 0))
-cv2.createTrackbar("s_max", "mask", filters["max"][1], 255, partial(update_range, "max", 1))
-cv2.createTrackbar("v_max", "mask", filters["max"][2], 255, partial(update_range, "max", 2))
+cv2.namedWindow("frame")
 
-# Start video capture
-cam = cv2.VideoCapture(4)
-cam.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
-cam.set(cv2.CAP_PROP_EXPOSURE, 120.0)
-cam.set(cv2.CAP_PROP_AUTO_WB, 0)
-cam.set(cv2.CAP_PROP_WB_TEMPERATURE, 5700)
-cam.set(3, width)
-cam.set(4, height)
+cv2.createTrackbar("h_min", "frame", saved_color["min"][0], 255, partial(update_range, "min", 0))
+cv2.createTrackbar("s_min", "frame", saved_color["min"][1], 255, partial(update_range, "min", 1))
+cv2.createTrackbar("v_min", "frame", saved_color["min"][2], 255, partial(update_range, "min", 2))
+cv2.createTrackbar("h_max", "frame", saved_color["max"][0], 255, partial(update_range, "max", 0))
+cv2.createTrackbar("s_max", "frame", saved_color["max"][1], 255, partial(update_range, "max", 1))
+cv2.createTrackbar("v_max", "frame", saved_color["max"][2], 255, partial(update_range, "max", 2))
+
+video_getter = VideoGet(4).start()
+first_frame = video_getter.frame
 
 while True:
+
+    if video_getter.stopped:
+        video_getter.stop()
+        break
+
+    hsv = video_getter.frame
     # 1. OpenCV gives you a BGR image
-    _, bgr = cam.read()
+    #_, bgr = cam.read()
     #cv2.imshow("bgr", bgr)
 
     # 2. Convert BGR to HSV where color distributions are better
-    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    #hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     #cv2.imshow("hsv", hsv)
-    masked_img = cv2.inRange(hsv, tuple(filters["min"]), tuple(filters["max"]))
+    #masked_img = cv2.inRange(hsv, (filters["min"]), (filters["max"]))
+    masked_img = cv2.inRange(hsv, saved_color["min"], saved_color["max"])
     kernel = np.ones((5, 5), np.uint8)
     masked_img = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
     erosion = cv2.erode(masked_img, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)
+    cont, hie = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contour_img = cv2.drawContours(masked_img, cont, -1, (255, 0, 255))
 
-    cv2.imshow("bgr", bgr)
-    cv2.imshow("bilateral", dilation)
+    try:
+        max_cont = max(cont, key=cv2.contourArea)
+        (x, y), r = cv2.minEnclosingCircle(max_cont)
+        x = int(x)
+        y = int(y)
+        r = int(r)
+        # print("vision color filter: ", (x, y), r)
+
+    except Exception as e:
+        # print("Nothing found, returning 0, 0, 0")
+        x = None;
+        y = None;
+        r = None
+
+
+    #cv2.imshow("bgr", r)
+    cv2.imshow("cont", contour_img)
 
     key = cv2.waitKey(10)
 
@@ -90,7 +112,7 @@ while True:
         save()
 
     if key & 0xFF == ord("q"):
+        video_getter.stop()
         save()
         break
 
-cam.release()
