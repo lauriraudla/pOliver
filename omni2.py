@@ -133,8 +133,8 @@ def pid2(sisend, integral, derivative, err_prev):
     return 640 - pööramiskiirus
 
 def pidBallCenter(sisend, integral, derivative, err_prev):
-    P = 0.03
-    I = 0.0
+    P = 0.02
+    I = 0.015
     D = 0
     #print(sisend, err_prev)
     # sisend on error keskkohast

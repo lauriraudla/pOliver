@@ -10,10 +10,11 @@ import time
 import json
 import websocket
 import config
-from _thread import *  # low level threading library
-go = 0
+import LUT
+
+go = False
 robot = "pOliver"
-ws = websocket.create_connection('ws://192.168.2.64:8887/')
+ws = websocket.create_connection('ws://192.168.2.220:8111/')
 
 def putIterationsPerSec(frame, iterations_per_sec):
     """
@@ -87,23 +88,28 @@ def threadBoth():
                         pid = omni2.pid(x, integral, derivative, err_prev)
                         omni2.toBall(values, 55, [pid, y])
                         # kui pall on kaugemal kui väärtus
-                    elif y < 600 and y is not None and y != 0:
+                    elif y < 620 and y is not None and y != 0:
                         pid = omni2.pid2(x, integral, derivative, err_prev)
                         omni2.toBall(values, 25, [pid, y])
-                    elif y > 600 and y is not None and y != 0:
+                    elif y > 620 and y is not None and y != 0:
                         omni2.ballRotate(values, 10, omni2.pidBallCenter(x, integral, derivative, err_prev))
                         #print(x)
                         try:
-                            if 640 < korv[0] < 700:
-                                omni2.stop(values)
-                                omni2.startThrow(values, 100)
-                                time.sleep(0.2)
-                                omni2.forward(values, 15)
-                                time.sleep(0.9)
-                                omni2.endThrow(values)
-                                integral = 0
-                                derivative = 0
-                                err_prev = 0
+                            if 620 < korv[0] < 650:
+                                try:
+                                    korv = info_shower.info2
+                                    omni2.stop(values)
+                                    time.sleep(0.1)
+                                    #omni2.startThrow(values, int(LUT.get_thrower_speed2(korv[1])))
+                                    omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[2]))*0.95))
+                                    omni2.forward(values, 20)
+                                    time.sleep(0.9)
+                                    omni2.endThrow(values)
+                                    integral = 0
+                                    derivative = 0
+                                    err_prev = 0
+                                except:
+                                    print("siin on putsis")
                         except:
                             #print("fail")
                             pass

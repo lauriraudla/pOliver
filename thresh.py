@@ -12,7 +12,7 @@ import numpy as np
 from VideoGet import VideoGet
 import config
 #from pOliver import vision_test, image_thread
-
+from InfoGet import BallGet
 width = 1280
 height = 720
 
@@ -65,19 +65,18 @@ cv2.createTrackbar("v_max", "frame", saved_color["max"][2], 255, partial(update_
 video_getter = VideoGet(4).start()
 first_frame = video_getter.frame
 
+
 while True:
 
     if video_getter.stopped:
         video_getter.stop()
         break
-
-    hsv = video_getter.frame
+    bgr = video_getter.frame
+    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     # 1. OpenCV gives you a BGR image
     #_, bgr = cam.read()
     #cv2.imshow("bgr", bgr)
-
     # 2. Convert BGR to HSV where color distributions are better
-    #hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     #cv2.imshow("hsv", hsv)
     #masked_img = cv2.inRange(hsv, (filters["min"]), (filters["max"]))
     masked_img = cv2.inRange(hsv, saved_color["min"], saved_color["max"])
