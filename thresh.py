@@ -73,6 +73,8 @@ while True:
         break
     bgr = video_getter.frame
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    cv2.imshow("bgr", bgr)
+    cv2.imshow("hsv", hsv)
     # 1. OpenCV gives you a BGR image
     #_, bgr = cam.read()
     #cv2.imshow("bgr", bgr)
@@ -81,11 +83,11 @@ while True:
     #masked_img = cv2.inRange(hsv, (filters["min"]), (filters["max"]))
     masked_img = cv2.inRange(hsv, saved_color["min"], saved_color["max"])
     kernel = np.ones((5, 5), np.uint8)
-    masked_img = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
-    erosion = cv2.erode(masked_img, kernel, iterations=1)
+    masked_img2 = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
+    erosion = cv2.erode(masked_img2, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)
     cont, hie = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contour_img = cv2.drawContours(masked_img, cont, -1, (255, 0, 255))
+    contour_img = cv2.drawContours(masked_img2, cont, -1, (255, 0, 255))
 
     try:
         max_cont = max(cont, key=cv2.contourArea)

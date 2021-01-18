@@ -8,7 +8,7 @@ import config
 
 class Referee:
     """
-    Class that continuously shows a frame using a dedicated thread.
+    Class that continuously reads commands from referee server websocket
     """
 
     def __init__(self, ws):

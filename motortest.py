@@ -2,7 +2,7 @@ import serial
 from math import cos, sqrt, atan2, floor, radians
 values = [25, 25, 0, 65, 65, 65, 0, 170]
 
-ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
 
 def write(move):
     print(move)

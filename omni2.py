@@ -23,9 +23,9 @@ def rotate(values, speed):
     values[5] = 65 + speed
     sendIt(values)
 
-def ballRotate(values, speed, pit):
-    values[3] = 65 - pit
-    values[4] = 65 - pit
+def ballRotate(values, speed, pit, forwardSpeed):
+    values[3] = 65 - pit + (forwardSpeed * -1)
+    values[4] = 65 - pit + forwardSpeed
     values[5] = 65 + speed
     #print(values)
     sendIt(values)
@@ -146,3 +146,44 @@ def pidBallCenter(sisend, integral, derivative, err_prev):
     #print(int(pööramiskiirus))
 
     return int(0 - pööramiskiirus)
+
+def pidBallCenterForward(sisend, integral, derivative, err_prev):
+    P = 0.02
+    I = 0.015
+    D = 0
+    #print(sisend, err_prev)
+    # sisend on error keskkohast
+    error = 640 - sisend
+    integral += error
+    derivative = error - err_prev
+    err_prev = error
+    pööramiskiirus = P * error + integral * I + derivative * D
+    #print(int(0-pööramiskiirus))
+
+    return int(0 - pööramiskiirus)
+
+
+def pidBallCenterRotateSpeed(sisend, integral, derivative, err_prev, errors_array):
+    # korvi keskel hoidmine
+    if sisend is None or sisend == 0:
+        return 30
+    else:
+        P = 0.015
+        I = 0.02
+        D = 0
+        #print(sisend, err_prev)
+        # sisend on error keskkohast
+        error = 640 - sisend
+        errors_array.append(error)
+        errors_array.pop(0)
+
+        #print(errors_array)
+        integral += error
+        derivative = error - err_prev
+        err_prev = error
+        pööramiskiirus = P * error + integral * I + derivative * D
+        #print(int(pööramiskiirus))
+
+        return int(0 - pööramiskiirus)
+
+

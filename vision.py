@@ -29,20 +29,23 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False):
     #print(ball_color_range)
     if basket:
         masked_img = cv2.inRange(hsv, basket_color_range["min"], basket_color_range["max"])
+        cv2.imshow("hsv", hsv)
+        #print(basket_color_range["min"], basket_color_range["max"])
     elif bounds:
         #masked_img = cv2.inRange(hsv, edge_color_range["min"], edge_color_range["max"])
         pass
     else:
         masked_img = cv2.inRange(hsv, ball_color_range["min"], ball_color_range["max"])
+        #print(ball_color_range["min"], ball_color_range["max"])
     kernel = np.ones((5, 5), np.uint8)
-    masked_img = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
-    erosion = cv2.erode(masked_img, kernel, iterations=1)
+    masked_img2 = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
+    erosion = cv2.erode(masked_img2, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)
     # erosion = cv2.erode(masked_img, kernel, iterations=1)
     # dilation = cv2.dilate(erosion, kernel, iterations=1)
     # dilation = masked_img
     cont, hie = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contour_img = cv2.drawContours(masked_img, cont, -1, (255, 0, 255))
+    contour_img = cv2.drawContours(masked_img2, cont, -1, (255, 0, 255))
     # print("cont", cont)
     try:
         max_cont = max(cont, key=cv2.contourArea)

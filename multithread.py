@@ -7,14 +7,15 @@ from InfoGet import BallGet
 from ref import Referee
 import omni2
 import time
-import json
 import websocket
-import config
 import LUT
 
 go = False
 robot = "pOliver"
-ws = websocket.create_connection('ws://192.168.2.220:8111/')
+# Testvõistluse server
+#ws = websocket.create_connection('ws://192.168.2.220:8111/')
+# Server Sveni läpakas
+ws = websocket.create_connection('ws://192.168.2.65:8887/')
 
 def putIterationsPerSec(frame, iterations_per_sec):
     """
@@ -41,6 +42,11 @@ def threadBoth():
     integral = 0
     derivative = 0
     err_prev = 0
+    err_prev_fwd = 0
+    err_prev_rot = 0
+    errors_array = [0] * 10
+    dummy_errors_array = [0] * 10
+    flag = 0
     go = ref.go
 
 
@@ -61,9 +67,11 @@ def threadBoth():
             video_getter.stop()
             ref.stop()
             omni2.stopAll(values)
+            cv2.destroyAllWindows()
             break
 
         frame = video_getter.frame
+        #cv2.imshow("frame", frame)
         frame = putIterationsPerSec(frame, cps.countsPerSec())
         info_shower.basket = False
         info_shower.frame = frame
@@ -79,40 +87,88 @@ def threadBoth():
                     x = ball[0]
                     y = ball[1]
                     #print(ball)
+                    if korv[0] is not None:
+                        omni2.ballRotate(values,
+                                         -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
+                                                                             err_prev_rot, errors_array),
+                                         omni2.pidBallCenter(x, integral, derivative, err_prev),
+                                         omni2.pidBallCenterForward(y, integral, derivative, err_prev_fwd))
 
+                        if all(abs(n) < 15 for n in errors_array) or flag == 1:
+                            flag = 1
+                            print("alustan viskamist")
+                            #print(y)
+                            if y < 710:
+                                #print("lammas")
+                                omni2.ballRotate(values,
+                                                 -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative, err_prev_rot, dummy_errors_array),
+                                                 omni2.pidBallCenter(x, integral, derivative, err_prev),
+                                                 -5)
+                            else:
+                                #print("lehm")
+                                omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[2]))*0.95))
+                                x = 0
+                                while x < 7500:
+                                    omni2.ballRotate(values,
+                                                     -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
+                                                                                         err_prev_rot,
+                                                                                         dummy_errors_array),
+                                                     -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
+                                                                                         err_prev_rot,
+                                                                                         dummy_errors_array),
+                                                     -5)
+                                    x += 1
+                                flag = 0
+                                omni2.endThrow(values)
                     # kui pall on kaugemal kui väärtus
-                    if y < 60 and y is not None and y != 0:
+                    elif y < 60 and y is not None and y != 0:
                         pid = omni2.pid2(x, integral, derivative, err_prev)
                         omni2.toBall(values, 15, [pid, y])
                     elif y < 230 and y is not None and y != 0:
-                        pid = omni2.pid(x, integral, derivative, err_prev)
+                        pid = omni2.pid2(x, integral, derivative, err_prev)
                         omni2.toBall(values, 55, [pid, y])
                         # kui pall on kaugemal kui väärtus
-                    elif y < 620 and y is not None and y != 0:
+                        #print("uss")
+                    elif y < 440 and y is not None and y != 0:
                         pid = omni2.pid2(x, integral, derivative, err_prev)
                         omni2.toBall(values, 25, [pid, y])
-                    elif y > 620 and y is not None and y != 0:
-                        omni2.ballRotate(values, 10, omni2.pidBallCenter(x, integral, derivative, err_prev))
-                        #print(x)
-                        try:
-                            if 620 < korv[0] < 650:
-                                try:
-                                    korv = info_shower.info2
-                                    omni2.stop(values)
-                                    time.sleep(0.1)
-                                    #omni2.startThrow(values, int(LUT.get_thrower_speed2(korv[1])))
-                                    omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[2]))*0.95))
-                                    omni2.forward(values, 20)
-                                    time.sleep(0.9)
-                                    omni2.endThrow(values)
-                                    integral = 0
-                                    derivative = 0
-                                    err_prev = 0
-                                except:
-                                    print("siin on putsis")
-                        except:
-                            #print("fail")
-                            pass
+                        #print("lammas")
+                    elif y > 440 and y is not None and y != 0:
+                        omni2.ballRotate(values,
+                                         -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative, err_prev_rot, errors_array),
+                                         omni2.pidBallCenter(x, integral, derivative, err_prev),
+                                         omni2.pidBallCenterForward(y, integral, derivative, err_prev_fwd))
+                        #print(errors_array)
+
+
+                        if all(abs(n) < 15 for n in errors_array) or flag == 1:
+                            flag = 1
+                            print("alustan viskamist")
+                            #print(y)
+                            if y < 710:
+                                #print("lammas")
+                                omni2.ballRotate(values,
+                                                 -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative, err_prev_rot, dummy_errors_array),
+                                                 omni2.pidBallCenter(x, integral, derivative, err_prev),
+                                                 -5)
+                            else:
+                                #print("lehm")
+                                omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[2]))*0.95))
+                                x = 0
+                                while x < 7500:
+                                    omni2.ballRotate(values,
+                                                     -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
+                                                                                         err_prev_rot,
+                                                                                         dummy_errors_array),
+                                                     -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
+                                                                                         err_prev_rot,
+                                                                                         dummy_errors_array),
+                                                     -5)
+                                    x += 1
+                                flag = 0
+                                omni2.endThrow(values)
+
+
 
                 else:
                     # print("otsin")
