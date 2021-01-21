@@ -10,7 +10,7 @@ ball_noise_kernel = config.get("vision", "ball_noise_kernel")
 edge_color_range = config.get("colors", config.get("vision", "bounds"))
 
 
-def apply_ball_color_filter(hsv, basket=False, bounds = False):
+def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None):
     #print(ball_color_range)
     #print(hsv)
 
@@ -54,6 +54,10 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False):
         y = int(y)
         r = int(r)
         # print("vision color filter: ", (x, y), r)
+        if korv is not None and korv > 125:
+            x = None;
+            y = None;
+            r = None
 
         if r < 3 and not basket:
             raise NotImplementedError

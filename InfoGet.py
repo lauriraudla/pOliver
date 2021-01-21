@@ -25,8 +25,8 @@ class BallGet:
             hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
             #cv2.imshow("hsv", hsv)
             #hsv = self.frame
-            self.info = vision.apply_ball_color_filter(hsv)
-            self.info2 = vision.apply_ball_color_filter(hsv,True)
+            self.info2 = vision.apply_ball_color_filter(hsv, True)
+            self.info = vision.apply_ball_color_filter(hsv, False, False, self.info2[1])
             #self.info3 = vision.apply_ball_color_filter(hsv, False, True)
             #if self.basket:
             #    self.info = vision.apply_ball_color_filter(hsv,True)

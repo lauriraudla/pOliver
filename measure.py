@@ -4,7 +4,7 @@ import omni2
 import cv2
 
 width = 0
-speed = 109
+speed = 72
 values = [25, 25, 0, 65, 65, 65, 0, 170]
 # blue or magenta
 color = "blue"
@@ -31,6 +31,7 @@ while True:
         print("iks: " + str(korv[0]))
         print("ygrek: " + str(korv[1]))
         print("laius: " + str(korv[2]))
+        print("summa: " + str(korv[1] + korv[2]))
         print()
 
     except:

@@ -15,7 +15,7 @@ robot = "pOliver"
 # Testvõistluse server
 #ws = websocket.create_connection('ws://192.168.2.220:8111/')
 # Server Sveni läpakas
-ws = websocket.create_connection('ws://192.168.2.65:8887/')
+ws = websocket.create_connection('ws://192.168.2.64:8887/')
 
 def putIterationsPerSec(frame, iterations_per_sec):
     """
@@ -44,8 +44,8 @@ def threadBoth():
     err_prev = 0
     err_prev_fwd = 0
     err_prev_rot = 0
-    errors_array = [0] * 10
-    dummy_errors_array = [0] * 10
+    errors_array = [0] * 40
+    dummy_errors_array = [0] * 40
     flag = 0
     go = ref.go
 
@@ -55,6 +55,19 @@ def threadBoth():
     state = 0# 0 otsib palli, 1 pöörleb, -> otsib korvi, -> 2 võtab palli keskele ja viskab
 
     cps = CountsPerSec().start()
+
+    values = [0, 0, 0, 0, 0, 0, 0, 170]
+    omni2.sendIt(values)
+    time.sleep(0.1)
+    omni2.sendIt(values)
+    time.sleep(0.1)
+    omni2.sendIt(values)
+    time.sleep(0.1)
+    omni2.sendIt(values)
+    time.sleep(0.1)
+    omni2.sendIt(values)
+    time.sleep(0.1)
+
 
     values = [25, 25, 0, 65, 55, 65, 0, 170]
 
@@ -88,13 +101,14 @@ def threadBoth():
                     y = ball[1]
                     #print(ball)
                     if korv[0] is not None:
-                        omni2.ballRotate(values,
-                                         -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
-                                                                             err_prev_rot, errors_array),
-                                         omni2.pidBallCenter(x, integral, derivative, err_prev),
-                                         omni2.pidBallCenterForward(y, integral, derivative, err_prev_fwd))
+                        if flag == 0:
+                            omni2.ballRotate(values,
+                                             -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
+                                                                                 err_prev_rot, errors_array),
+                                             omni2.pidBallCenter(x, integral, derivative, err_prev),
+                                             omni2.pidBallCenterForward(y, integral, derivative, err_prev_fwd))
 
-                        if all(abs(n) < 15 for n in errors_array) or flag == 1:
+                        if all(abs(n) < 20 for n in errors_array) and y > 540 or flag == 1:
                             flag = 1
                             print("alustan viskamist")
                             #print(y)
@@ -106,9 +120,10 @@ def threadBoth():
                                                  -5)
                             else:
                                 #print("lehm")
-                                omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[2]))*0.95))
+
                                 x = 0
-                                while x < 7500:
+                                while x < 3000:
+                                    omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[1]))*0.91))
                                     omni2.ballRotate(values,
                                                      -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
                                                                                          err_prev_rot,
@@ -117,58 +132,32 @@ def threadBoth():
                                                                                          err_prev_rot,
                                                                                          dummy_errors_array),
                                                      -5)
-                                    x += 1
+                                    x -= -1
                                 flag = 0
                                 omni2.endThrow(values)
                     # kui pall on kaugemal kui väärtus
                     elif y < 60 and y is not None and y != 0:
+                        #print(1)
                         pid = omni2.pid2(x, integral, derivative, err_prev)
-                        omni2.toBall(values, 15, [pid, y])
+                        omni2.toBall(values, 20, [pid, y])
                     elif y < 230 and y is not None and y != 0:
+                        #print(1)
                         pid = omni2.pid2(x, integral, derivative, err_prev)
                         omni2.toBall(values, 55, [pid, y])
                         # kui pall on kaugemal kui väärtus
                         #print("uss")
                     elif y < 440 and y is not None and y != 0:
+                        #print(1)
                         pid = omni2.pid2(x, integral, derivative, err_prev)
                         omni2.toBall(values, 25, [pid, y])
                         #print("lammas")
                     elif y > 440 and y is not None and y != 0:
+                        #print(1)
                         omni2.ballRotate(values,
                                          -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative, err_prev_rot, errors_array),
                                          omni2.pidBallCenter(x, integral, derivative, err_prev),
                                          omni2.pidBallCenterForward(y, integral, derivative, err_prev_fwd))
                         #print(errors_array)
-
-
-                        if all(abs(n) < 15 for n in errors_array) or flag == 1:
-                            flag = 1
-                            print("alustan viskamist")
-                            #print(y)
-                            if y < 710:
-                                #print("lammas")
-                                omni2.ballRotate(values,
-                                                 -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative, err_prev_rot, dummy_errors_array),
-                                                 omni2.pidBallCenter(x, integral, derivative, err_prev),
-                                                 -5)
-                            else:
-                                #print("lehm")
-                                omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[2]))*0.95))
-                                x = 0
-                                while x < 7500:
-                                    omni2.ballRotate(values,
-                                                     -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
-                                                                                         err_prev_rot,
-                                                                                         dummy_errors_array),
-                                                     -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
-                                                                                         err_prev_rot,
-                                                                                         dummy_errors_array),
-                                                     -5)
-                                    x += 1
-                                flag = 0
-                                omni2.endThrow(values)
-
-
 
                 else:
                     # print("otsin")
@@ -179,6 +168,9 @@ def threadBoth():
             except:
                 #print("otsin")
                 omni2.rotate(values,10)
+                integral = 0
+                derivative = 0
+                err_prev = 0
                 # kui palli ei ole keeruta koha peal
             cps.increment()
         else:

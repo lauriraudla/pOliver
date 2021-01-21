@@ -138,7 +138,7 @@ def pidBallCenter(sisend, integral, derivative, err_prev):
     D = 0
     #print(sisend, err_prev)
     # sisend on error keskkohast
-    error = 640 - sisend
+    error = 630 - sisend
     integral += error
     derivative = error - err_prev
     err_prev = error
@@ -152,6 +152,9 @@ def pidBallCenterForward(sisend, integral, derivative, err_prev):
     I = 0.015
     D = 0
     #print(sisend, err_prev)
+    if sisend < 540:
+        return -30
+    #(1 - sisend/720)
     # sisend on error keskkohast
     error = 640 - sisend
     integral += error
