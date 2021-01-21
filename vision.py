@@ -10,7 +10,7 @@ ball_noise_kernel = config.get("vision", "ball_noise_kernel")
 edge_color_range = config.get("colors", config.get("vision", "bounds"))
 
 
-def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None):
+def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=None):
     #print(ball_color_range)
     #print(hsv)
 
@@ -29,10 +29,10 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None):
     #print(ball_color_range)
     if basket:
         masked_img = cv2.inRange(hsv, basket_color_range["min"], basket_color_range["max"])
-        cv2.imshow("hsv", hsv)
+        #cv2.imshow("hsv", hsv)
         #print(basket_color_range["min"], basket_color_range["max"])
     elif bounds:
-        #masked_img = cv2.inRange(hsv, edge_color_range["min"], edge_color_range["max"])
+        masked_img = cv2.inRange(hsv, edge_color_range["min"], edge_color_range["max"])
         pass
     else:
         masked_img = cv2.inRange(hsv, ball_color_range["min"], ball_color_range["max"])
@@ -58,6 +58,24 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None):
             x = None;
             y = None;
             r = None
+        count = 0
+        if piir is not None:
+            try:
+                for i in range(len(piir)-y):
+                    alla = piir[y+i][x]
+                    if alla > 0:
+                        count += 1
+                    elif alla == 0:
+                        count = 0
+                    if count == 7:
+                        print("pall on väljaspool")
+                        x = None;
+                        y = None;
+                        r = None
+                        count = 0
+                        return x, y, r, contour_img
+            except:
+                pass
 
         if r < 3 and not basket:
             raise NotImplementedError
@@ -76,7 +94,7 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None):
     masked_img = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
     mask_basket = cv2.morphologyEx(mask_basket, cv2.MORPH_OPEN, kernel)"""
     # Only return the blob of the largest objects of the same color
-
+    #print(x,y)
     return x, y, r, contour_img
 
 

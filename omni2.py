@@ -5,7 +5,7 @@ import math
 #rotate, ballrotate ja stop seda ei vaja
 #aga ühtluse mõttes, sest omnitoball on *palju* lihtsam kui teeme nii
 
-ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
 
 a_wheel_angle = 120
 b_wheel_angle = 240
@@ -27,7 +27,7 @@ def ballRotate(values, speed, pit, forwardSpeed):
     values[3] = 65 - pit + (forwardSpeed * -1)
     values[4] = 65 - pit + forwardSpeed
     values[5] = 65 + speed
-    #print(values)
+    print(values)
     sendIt(values)
 
 def ballRotateExact(values, speed):
@@ -89,7 +89,7 @@ def toBall(values,speed,ball, middle=None):#kus ball on 2 elemendiline array: X 
                                                        mid_x, ball_X, ball_Y)
     values[4] = 65 + calculate_linear_velocity(speed, b_wheel_angle, movement_direction_forward,
                                                         mid_x, ball_X, ball_Y)
-
+    print(values)
     sendIt(values)
 
 def calculate_linear_velocity(wheel_speed, wheel_angle, direction, mid_x=None, X=None, Y=None):
@@ -138,7 +138,7 @@ def pidBallCenter(sisend, integral, derivative, err_prev):
     D = 0
     #print(sisend, err_prev)
     # sisend on error keskkohast
-    error = 630 - sisend
+    error = 640 - sisend
     integral += error
     derivative = error - err_prev
     err_prev = error
@@ -176,7 +176,7 @@ def pidBallCenterRotateSpeed(sisend, integral, derivative, err_prev, errors_arra
         D = 0
         #print(sisend, err_prev)
         # sisend on error keskkohast
-        error = 640 - sisend
+        error = 600 - sisend
         errors_array.append(error)
         errors_array.pop(0)
 

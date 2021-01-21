@@ -48,6 +48,7 @@ def threadBoth():
     dummy_errors_array = [0] * 40
     flag = 0
     go = ref.go
+    ballFind = False
 
 
     #prev_img = []
@@ -69,7 +70,7 @@ def threadBoth():
     time.sleep(0.1)
 
 
-    values = [25, 25, 0, 65, 55, 65, 0, 170]
+    values = [12, 12, 0, 65, 55, 65, 0, 170]
 
     while True:
 
@@ -96,12 +97,18 @@ def threadBoth():
 
         if go:
             try:
-                if ball[0] is not None:
+                if ball[0] is not None and ball[1] > 20:
+                    if ballFind == True:
+                        omni2.stopAll(values)
+                        time.sleep(0.2)
+                        ballFind = False
                     x = ball[0]
                     y = ball[1]
                     #print(ball)
                     if korv[0] is not None:
+                        #print(flag,x,y)
                         if flag == 0:
+                            #print("türa")
                             omni2.ballRotate(values,
                                              -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
                                                                                  err_prev_rot, errors_array),
@@ -113,17 +120,22 @@ def threadBoth():
                             print("alustan viskamist")
                             #print(y)
                             if y < 710:
-                                #print("lammas")
+                                print("lammas")
                                 omni2.ballRotate(values,
                                                  -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative, err_prev_rot, dummy_errors_array),
                                                  omni2.pidBallCenter(x, integral, derivative, err_prev),
                                                  -5)
                             else:
-                                #print("lehm")
+                                print("lehm")
 
                                 x = 0
-                                while x < 3000:
-                                    omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[1]))*0.91))
+                                omni2.stopAll(values)
+                                time.sleep(0.1)
+                                while x < 4000:
+                                    integral = 0
+                                    derivative = 0
+                                    err_prev = 0
+                                    omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[1]))*0.98))
                                     omni2.ballRotate(values,
                                                      -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
                                                                                          err_prev_rot,
@@ -153,6 +165,7 @@ def threadBoth():
                         #print("lammas")
                     elif y > 440 and y is not None and y != 0:
                         #print(1)
+                        #print(ball)
                         omni2.ballRotate(values,
                                          -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative, err_prev_rot, errors_array),
                                          omni2.pidBallCenter(x, integral, derivative, err_prev),
@@ -160,14 +173,17 @@ def threadBoth():
                         #print(errors_array)
 
                 else:
-                    # print("otsin")
-                    omni2.rotate(values, 10)
+                    print("otsin")
+                    ballFind = True
+                    omni2.rotate(values, 4)
+                    time.sleep(0.5)
                     integral = 0
                     derivative = 0
                     err_prev = 0
             except:
-                #print("otsin")
-                omni2.rotate(values,10)
+                ballFind = True
+                print("otsin2")
+                omni2.rotate(values,4)
                 integral = 0
                 derivative = 0
                 err_prev = 0
