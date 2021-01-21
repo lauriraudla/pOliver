@@ -24,7 +24,7 @@ class Referee:
 
     def listen(self):
 
-        while True:
+        while not self.stopped:
             message = self.ws.recv()
             command = json.loads(message)
 

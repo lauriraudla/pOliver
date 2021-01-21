@@ -5,7 +5,10 @@ import math
 #rotate, ballrotate ja stop seda ei vaja
 #aga ühtluse mõttes, sest omnitoball on *palju* lihtsam kui teeme nii
 
-ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
+try:
+    ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
+except:
+    ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
 
 a_wheel_angle = 120
 b_wheel_angle = 240
@@ -120,8 +123,8 @@ def pid(sisend, integral, derivative, err_prev):
     return 640 - pööramiskiirus
 
 def pid2(sisend, integral, derivative, err_prev):
-    P = 0.1
-    I = 0.0
+    P = 0.01
+    I = 0.04
     D = 0
     # sisend on error keskkohast
     error = 640 - sisend
@@ -176,7 +179,7 @@ def pidBallCenterRotateSpeed(sisend, integral, derivative, err_prev, errors_arra
         D = 0
         #print(sisend, err_prev)
         # sisend on error keskkohast
-        error = 600 - sisend
+        error = 610 - sisend
         errors_array.append(error)
         errors_array.pop(0)
 

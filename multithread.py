@@ -131,11 +131,12 @@ def threadBoth():
                                 x = 0
                                 omni2.stopAll(values)
                                 time.sleep(0.1)
+                                #thrower_average = [int(int(LUT.get_thrower_speed(korv[1]))*0.93)] * 20
                                 while x < 4000:
                                     integral = 0
                                     derivative = 0
                                     err_prev = 0
-                                    omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[1]))*0.98))
+                                    omni2.startThrow(values, int(int(LUT.get_thrower_speed(korv[1]))*0.89)+5)
                                     omni2.ballRotate(values,
                                                      -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
                                                                                          err_prev_rot,
@@ -151,7 +152,7 @@ def threadBoth():
                     elif y < 60 and y is not None and y != 0:
                         #print(1)
                         pid = omni2.pid2(x, integral, derivative, err_prev)
-                        omni2.toBall(values, 20, [pid, y])
+                        omni2.toBall(values, 30, [pid, y])
                     elif y < 230 and y is not None and y != 0:
                         #print(1)
                         pid = omni2.pid2(x, integral, derivative, err_prev)
@@ -175,15 +176,15 @@ def threadBoth():
                 else:
                     print("otsin")
                     ballFind = True
-                    omni2.rotate(values, 4)
-                    time.sleep(0.5)
+                    omni2.rotate(values, 7)
+                    time.sleep(0.3)
                     integral = 0
                     derivative = 0
                     err_prev = 0
             except:
                 ballFind = True
                 print("otsin2")
-                omni2.rotate(values,4)
+                omni2.rotate(values,7)
                 integral = 0
                 derivative = 0
                 err_prev = 0
