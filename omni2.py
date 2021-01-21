@@ -189,7 +189,7 @@ def pidBallCenterRotateSpeed(sisend, integral, derivative, err_prev, errors_arra
         err_prev = error
         pööramiskiirus = P * error + integral * I + derivative * D
         #print(int(pööramiskiirus))
-
-        return int(0 - pööramiskiirus)
+        return int((0 - pööramiskiirus))
+        #return int(math.ceil(0 - pööramiskiirus))
 
 
