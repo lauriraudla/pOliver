@@ -2,16 +2,21 @@ import serial
 from math import cos, sqrt, atan2, floor, radians
 values = [25, 25, 0, 60, 60, 60, 0, 170]
 
-ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
+try:
+    ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
+except:
+    ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
 
 def write(move):
     print(move)
     ser.write(bytearray(move))
     #print("sent")
     while ser.inWaiting():
-        (ser.read())
+        print(ser.read())
+
 
 while True:
+
     inp = input("sisesta:")
     if inp == "1":
         write(values)

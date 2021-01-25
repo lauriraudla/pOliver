@@ -1,9 +1,11 @@
 #liikumise definitsioonid
 import serial
 import math
+recv = 0
 #muutsin ära kiiruse saatmise loogika - me saadame siia käskudele vahemiku -65 kuni 65, convertib meile õigeks
 #rotate, ballrotate ja stop seda ei vaja
 #aga ühtluse mõttes, sest omnitoball on *palju* lihtsam kui teeme nii
+
 
 try:
     ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
@@ -15,10 +17,15 @@ b_wheel_angle = 240
 c_wheel_angle = 0
 movement_direction_forward = 90
 
+def returnRecv():
+    return recv
+
 def sendIt(values):
+    global recv
     ser.write(bytearray(values))
     while ser.inWaiting():
-        (ser.read())
+        msg = (ser.read())
+        recv = msg[len(msg) - 2]
 
 def rotate(values, speed):
     values[3] = 65 + speed
@@ -88,7 +95,7 @@ def toBall(values,speed,ball, middle=None):#kus ball on 2 elemendiline array: X 
 
     values[3] = 65 + calculate_linear_velocity(speed, a_wheel_angle, movement_direction_forward,
                                                         mid_x, ball_X, ball_Y)
-    values[5] = 65 - calculate_linear_velocity(speed, c_wheel_angle, movement_direction_forward,
+    values[5] = 65 + calculate_linear_velocity(speed, c_wheel_angle, movement_direction_forward,
                                                        mid_x, ball_X, ball_Y)
     values[4] = 65 + calculate_linear_velocity(speed, b_wheel_angle, movement_direction_forward,
                                                         mid_x, ball_X, ball_Y)
@@ -155,7 +162,7 @@ def pidBallCenterForward(sisend, integral, derivative, err_prev):
     I = 0.015
     D = 0
     #print(sisend, err_prev)
-    if sisend < 540:
+    if sisend < 500:
         return -30
     #(1 - sisend/720)
     # sisend on error keskkohast
@@ -191,5 +198,3 @@ def pidBallCenterRotateSpeed(sisend, integral, derivative, err_prev, errors_arra
         #print(int(pööramiskiirus))
         return int((0 - pööramiskiirus))
         #return int(math.ceil(0 - pööramiskiirus))
-
-

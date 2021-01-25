@@ -1,0 +1,80 @@
+# Kui kaadris leidub pall ja korv on suurem kui 20 pikslit
+                if ball[0] is not None and ball[1] > 20:
+                    print("5")
+                    if ballFind == True:
+                        omni2.stopAll(values)
+                        #time.sleep(0.2)
+                        ballFind = False
+                    x = ball[0]
+                    y = ball[1]
+                    #print(ball)
+                    #  Kui korv on
+                    if korv[0] is not None:
+                        # Kui ei ole viskamiseni jõutud
+                        if flag == 0:
+                            print("türa")
+                            omni2.ballRotate(values,
+                                             -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative,
+                                                                                 err_prev_rot, errors_array),
+                                             omni2.pidBallCenter(x, integral, derivative, err_prev),
+                                             omni2.pidBallCenterForward(y, integral, derivative, err_prev_fwd))
+
+                        if all(abs(n) < 20 for n in errors_array) and y > 540 or flag == 1:
+                            flag = 1
+                            print("alustan viskamist")
+                            #print(y)
+                            if y < 640:
+                                print("lammas")
+                                omni2.ballRotate(values,
+                                                 -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative, err_prev_rot, dummy_errors_array),
+                                                 omni2.pidBallCenter(x, integral, derivative, err_prev),
+                                                 -5)
+                            else:
+                                print("lehm")
+
+                                x = 0
+                                omni2.stopAll(values)
+                                #time.sleep(0.2)
+                                # thrower_average = [int(int(LUT.get_thrower_speed(distance_finder.distance))*0.93)] * 20
+                                while x < 2500:
+                                    integral = 0
+                                    derivative = 0
+                                    err_prev = 0
+                                    omni2.startThrow(values, int(int(LUT.get_thrower_speed(distance_finder.distance))*0.89)+5)
+                                    omni2.forward(values,7)
+                                    x -= -1
+                                flag = 0
+                                omni2.endThrow(values)
+                    # kui pall on kaugemal kui väärtus
+                    elif y < 60 and y is not None and y != 0:
+                        print("1")
+                        pid = omni2.pid2(x, integral, derivative, err_prev)
+                        omni2.toBall(values, 30, [pid, y])
+                    elif y < 230 and y is not None and y != 0:
+                        print("2")
+                        pid = omni2.pid2(x, integral, derivative, err_prev)
+                        omni2.toBall(values, 55, [pid, y])
+                        # kui pall on kaugemal kui väärtus
+                        print("uss")
+                    elif y < 300 and y is not None and y != 0:
+                        print("3")
+                        pid = omni2.pid2(x, integral, derivative, err_prev)
+                        omni2.toBall(values, 25, [pid, y])
+                        print("lammas")
+                    elif y > 300 and y is not None and y != 0:
+                        print("6")
+                        #print(ball)
+                        omni2.ballRotate(values,
+                                         -1 * omni2.pidBallCenterRotateSpeed(korv[0], integral, derivative, err_prev_rot, errors_array),
+                                         omni2.pidBallCenter(x, integral, derivative, err_prev),
+                                         omni2.pidBallCenterForward(y, integral, derivative, err_prev_fwd))
+                        #print(errors_array)
+
+                else:
+                    print("otsin")
+                    ballFind = True
+                    omni2.rotate(values, 7)
+                    # time.sleep(0.3)
+                    integral = 0
+                    derivative = 0
+                    err_prev = 0

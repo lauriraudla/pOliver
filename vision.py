@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from threading import currentThread
 import config, config_basket
+from videoGet2 import imageCapRS2
 
 # Get color ranges and noise removal kernels from config
 ball_color_range = config.get("colors", config.get("vision", "ball_color"))
@@ -45,6 +46,17 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
     # dilation = cv2.dilate(erosion, kernel, iterations=1)
     # dilation = masked_img
     cont, hie = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Get blob contour coordinates
+    try:
+        cnt = cont[0]
+        x, y, w, h = cv2.boundingRect(cnt)
+        # Draw bounding rect to pic
+        cv2.rectangle(hsv, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    except:
+        #print("unable to draw contours")
+        pass
+
     contour_img = cv2.drawContours(masked_img2, cont, -1, (255, 0, 255))
     # print("cont", cont)
     try:
@@ -58,6 +70,8 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
             x = None;
             y = None;
             r = None
+            w = None
+            h = None
         count = 0
         if piir is not None:
             try:
@@ -72,6 +86,8 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
                         x = None;
                         y = None;
                         r = None
+                        w = None
+                        h = None
                         count = 0
                         return x, y, r, contour_img
             except:
@@ -86,6 +102,8 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
         x = None;
         y = None;
         r = None
+        w = None
+        h = None
 
     """hsv = cv2.medianBlur(hsv, 5)
     masked_img = cv2.inRange(hsv, ball_color_range["min"], ball_color_range["max"])
@@ -95,6 +113,6 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
     mask_basket = cv2.morphologyEx(mask_basket, cv2.MORPH_OPEN, kernel)"""
     # Only return the blob of the largest objects of the same color
     #print(x,y)
-    return x, y, r, contour_img
+    return x, y, r, contour_img, w, h
 
 
