@@ -1,32 +1,21 @@
 import numpy as np
 
-#distances_LUT = np.array(
-    #[26, 29, 32, 33,40, 43, 51, 52, 55, 59, 68, 77, 78, 96, 98, 104, 140, 182, 223, 314])
-#distances_LUT = np.array(
-#     [8, 11, 11, 12, 16, 17, 19, 20, 21, 23, 26, 31, 34, 38, 39, 47, 55, 71, 88, 121])
-#speeds_LUT = np.array(
-#     [120, 125, 111, 115, 110, 105, 100, 96, 95, 90, 85, 83, 80, 75, 72, 70, 65, 60, 55, 51])
-
 distances_LUT = np.array(
-    [239, 147, 151, 108, 81, 79, 60, 60, 47, 37, 113, 146])
-speeds_LUT = np.array(
-    [58, 67, 77, 77, 87, 87, 99, 100, 114, 126, 76, 68])
+     [0.4707700101064219, 0.6303866338539692, 0.7983498470655938, 1.0281418376560096, 1.2397800999041109,
+      1.4300420109266925, 1.5963234055538074, 1.7201134926932198, 1.8933951733358014, 1.9489886673485362,
+      2.071254532953221, 2.194162626659379, 2.245877067317862, 2.316204229731772, 2.492372122568561,
+      2.541943490375361, 2.654134416278881, 2.7629171667140646, 3.0134445859326258, 3.5082501411437987])
 
+speeds_LUT = np.array(
+     [50, 55, 60, 65, 70, 75, 80, 83, 86, 89, 92, 95, 98, 101, 104, 107, 110, 114, 119, 125])
 
 def get_thrower_speed(distance):
-    best_match = speeds_LUT[np.argmin(np.absolute(distances_LUT - distance))]
-    print("igrek: " + str(distance))
-    print("spiid: " + str(best_match))
+    # print("alustan kiiruse arvutamist")
+    best_match = speeds_LUT[np.argmin(np.absolute(distances_LUT-distance))]
+    # print("kiirus arvutatud")
     return best_match
-
 
 #distances_LUT = np.array(
-    #[21, 22, 23, 24, 25, 30, 33, 34, 35, 37, 40, 47, 50, 69, 103, 130])
+    #[239, 147, 151, 108, 81, 79, 60, 60, 47, 37, 113, 146])
 #speeds_LUT = np.array(
-    #[130, 126, 122, 105, 116, 96, 73, 105, 92, 85, 87, 88, 67, 75, 55, 63])
-
-
-def get_thrower_speed2(distance):
-    best_match = speeds_LUT[np.argmin(np.absolute(distances_LUT - distance))]
-    print(best_match)
-    return best_match
+    #[58, 67, 77, 77, 87, 87, 99, 100, 114, 126, 76, 68])

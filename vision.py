@@ -83,7 +83,7 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
                     elif alla == 0:
                         count = 0
                     if count == 7:
-                        print("pall on väljaspool")
+                        #print("pall on väljaspool")
                         x = None;
                         y = None;
                         r = None

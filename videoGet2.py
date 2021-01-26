@@ -8,7 +8,9 @@ class imageCapRS2:
 
     def commandThread(self):
         while not self.stopped:
+            self.ready = False
             self.frames = self.pipeline.wait_for_frames()
+            self.ready = True
             self.depth_frame = self.frames.get_depth_frame()
             self.color_frame = self.frames.get_color_frame()
             self.currentFrame = np.asanyarray(self.color_frame.get_data())
@@ -40,6 +42,8 @@ class imageCapRS2:
         self.currentFrame = None
         self.depth_color_frame = None
         self.depth_color_image = None
+
+        self.ready = False
 
         self.aligned_frames = None
         self.aligned_color_frame = None
@@ -93,9 +97,12 @@ class imageCapRS2:
         distprev = 0
         try:
             # meaure the distance of every pixel of the blob size on half of its height throughout it's width
-            for z in range(int(self.w)):
-                for i in range(int(20)):
-                    dist = self.depth_frame.get_distance(self.x + z, int(self.y / 2) + i)
+            #for z in range(int(self.w/2)):
+                #for i in range(int(self.h/2)):
+                    #dist = self.depth_frame.get_distance(self.x + int(self.w/4) + z, int(self.y) + i)
+            for z in range(int(self.w / 2)):
+                for i in range(int(self.h / 2)):
+                    dist = self.depth_frame.get_distance(self.x + int(self.w / 4) + z, int(self.y) + i)
                     # print(dist)
                     if dist == 0.0:
                         pass

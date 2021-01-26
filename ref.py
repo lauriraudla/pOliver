@@ -1,7 +1,7 @@
 from threading import Thread
-import cv2
-import asyncio
-import websockets
+#import cv2
+#import asyncio
+#import websockets
 import json
 import config
 

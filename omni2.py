@@ -12,6 +12,16 @@ try:
 except:
     ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
 
+
+intFWS = 0
+intFWF = 0
+intRWS = 0
+derFWS = 0
+derFWF = 0
+derRWS = 0
+errFWS = 0
+errFWF = 0
+errRWS = 0
 a_wheel_angle = 120
 b_wheel_angle = 240
 c_wheel_angle = 0
@@ -36,12 +46,102 @@ def rotate(values, speed):
     values[5] = 65 + speed
     sendIt(values)
 
-def ballRotate(values, speed, pit, forwardSpeed):
-    values[3] = 65 - pit + (forwardSpeed * -1)
-    values[4] = 65 - pit + forwardSpeed
-    values[5] = 65 + speed
+def reset(type):
+    global intFWS, intFWF, intRWS, derFWS, derFWF, derRWS, errFWS, errFWF, errRWS
+
+    if type == "FWS":
+        intFWS = 0
+        derFWS = 0
+        errFWS = 0
+    if type == "FWF":
+        intFWF = 0
+        derFWF = 0
+        errFWF = 0
+    if type == "RWS":
+        intRWS = 0
+        derRWS = 0
+        errRWS = 0
+
+def ballRotate(values, rearWheelSpeed, frontSideMovementSpeed, frontForwardSpeed):
+    values[3] = int(round(65 - frontSideMovementSpeed + (frontForwardSpeed * -1), 0))
+    values[4] = int(round(65 - frontSideMovementSpeed + frontForwardSpeed, 0))
+    values[5] = int(65 + round(rearWheelSpeed, 0))#demokraatia
     print(values)
     sendIt(values)
+
+
+def pid2(sisend, integral, derivative, err_prev):
+    P = 0.15
+    I = 0.00007
+    D = 0
+    # sisend on error keskkohast
+    error = 640 - sisend
+    integral += error
+    derivative = error - err_prev
+    err_prev = error
+    pööramiskiirus = P * error + integral * I + derivative * D
+
+    return 640 - pööramiskiirus
+
+
+def pidFrontWheelsSide(sisend):
+    global intFWS
+    global derFWS
+    global errFWS
+    P = 0.015
+    I = 0.00004
+    D = 0.006
+    # integral = intFWS
+    # print(sisend, err_prev)
+    # sisend on error keskkohast
+    error = 630 - sisend
+    intFWS += error * 0.1
+    derFWS = error - errFWS
+    errFWS = error
+    pööramiskiirus = P * error + intFWS * I + derFWS * D
+    # print(int(pööramiskiirus))
+    #print("Palli kesk:", sisend, (0 - pööramiskiirus), intFWS * I)
+    return (0 - pööramiskiirus)
+    #return 0
+
+def pidFrontWheelsforward(sisend):
+    global intFWF, derFWF, errFWF
+    P = 0.015
+    I = 0.0000
+    D = 0.035
+    if sisend < 400:
+        print("türannosaurus")
+        return -10
+    # sisend on error keskkohast
+    error = 630 - sisend
+    intFWF += error
+    derFWF = error - errFWF
+    errFWF = error
+    pööramiskiirus = (P * error + intFWF * I + derFWS * D)
+    #print("Pall edasi:", sisend, (0 - pööramiskiirus), intFWF * I)
+    return (0 - pööramiskiirus)
+
+def pidRearWheelSpeed(sisend, errors_array):
+    # korvi keskel hoidmine
+    global intRWS, derRWS, errRWS
+    if sisend is None or sisend == 0:
+        reset("RWS")
+        return 20
+    else:
+        P = 0.009
+        I = 0.000001
+        D = 0.00
+        # sisend on error keskkohast
+        error = 675 - sisend
+        errors_array.append(error)
+        errors_array.pop(0)
+
+        intRWS += error
+        derRWS = error - errRWS
+        errRWS = error
+        pööramiskiirus = P * error + intRWS * I + derRWS * D
+        #print("Korvi kesk:", sisend, (0 - pööramiskiirus), intRWS * I)
+        return ((0 - pööramiskiirus))
 
 def ballRotateExact(values, speed):
     values[3] = 64
@@ -97,11 +197,11 @@ def toBall(values,speed,ball, middle=None):#kus ball on 2 elemendiline array: X 
     ball_Y = ball[1]
 
     values[3] = 65 + calculate_linear_velocity(speed, a_wheel_angle, movement_direction_forward,
-                                                        mid_x, ball_X, ball_Y)
+                                               mid_x, ball_X, ball_Y)
     values[5] = 65 + calculate_linear_velocity(speed, c_wheel_angle, movement_direction_forward,
-                                                       mid_x, ball_X, ball_Y)
+                                               mid_x, ball_X, ball_Y)
     values[4] = 65 + calculate_linear_velocity(speed, b_wheel_angle, movement_direction_forward,
-                                                        mid_x, ball_X, ball_Y)
+                                               mid_x, ball_X, ball_Y)
     print(values)
     sendIt(values)
 
@@ -132,72 +232,4 @@ def pid(sisend, integral, derivative, err_prev):
 
     return 640 - pööramiskiirus
 
-def pid2(sisend, integral, derivative, err_prev):
-    P = 0.01
-    I = 0.04
-    D = 0
-    # sisend on error keskkohast
-    error = 640 - sisend
-    integral += error
-    derivative = error - err_prev
-    err_prev = error
-    pööramiskiirus = P * error + integral * I + derivative * D
 
-    return 640 - pööramiskiirus
-
-def pidBallCenter(sisend, integral, derivative, err_prev):
-    P = 0.02
-    I = 0.015
-    D = 0
-    #print(sisend, err_prev)
-    # sisend on error keskkohast
-    error = 640 - sisend
-    integral += error
-    derivative = error - err_prev
-    err_prev = error
-    pööramiskiirus = P * error + integral * I + derivative * D
-    #print(int(pööramiskiirus))
-
-    return int(0 - pööramiskiirus)
-
-def pidBallCenterForward(sisend, integral, derivative, err_prev):
-    P = 0.02
-    I = 0.015
-    D = 0
-    #print(sisend, err_prev)
-    if sisend < 400:
-        return -30
-    #(1 - sisend/720)
-    # sisend on error keskkohast
-    error = 640 - sisend
-    integral += error
-    derivative = error - err_prev
-    err_prev = error
-    pööramiskiirus = P * error + integral * I + derivative * D
-    #print(int(0-pööramiskiirus))
-
-    return int(0 - pööramiskiirus)
-
-
-def pidBallCenterRotateSpeed(sisend, integral, derivative, err_prev, errors_array):
-    # korvi keskel hoidmine
-    if sisend is None or sisend == 0:
-        return 30
-    else:
-        P = 0.015
-        I = 0.02
-        D = 0
-        #print(sisend, err_prev)
-        # sisend on error keskkohast
-        error = 620 - sisend
-        errors_array.append(error)
-        errors_array.pop(0)
-
-        #print(errors_array)
-        integral += error
-        derivative = error - err_prev
-        err_prev = error
-        pööramiskiirus = P * error + integral * I + derivative * D
-        #print(int(pööramiskiirus))
-        return int((0 - pööramiskiirus))
-        #return int(math.ceil(0 - pööramiskiirus))
