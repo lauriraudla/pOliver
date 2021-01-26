@@ -100,24 +100,27 @@ while True:
         cont, hie = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         # Get blob contour coordinates
-        cnt = cont[0]
-        x, y, w, h = cv2.boundingRect(cnt)
-        print(y+h)
-        # Draw bounding rect to pic
-        cv2.rectangle(hsv, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        try:
+            cnt = max(cont, key=cv2.contourArea)
+            x, y, w, h = cv2.boundingRect(cnt)
+            print(y+h)
+            # Draw bounding rect to pic
+            cv2.rectangle(hsv, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        except:
+            pass
         # update dist getter coordinates
-        video_getter.set_coordinates(x, y, w, h)
-        dist = video_getter.get_distance()
+        #video_getter.set_coordinates(x, y, w, h)
+        #dist = video_getter.get_distance()
         #print(video_getter.distance)
         #print(video_getter.x, video_getter.y, video_getter.w, video_getter.h)
-        if dist < 1.33 * dist_prev or dist > 0.67 * dist_prev or 0 in keskmistamine:
-            keskmistamine.append(dist)
-            keskmistamine.pop(0)
-            #print(sum(keskmistamine)/len(keskmistamine))
-            dist_prev = dist
-        else:
-            #print("värdmõõt" + str(dist))
-            pass
+        # if dist < 1.33 * dist_prev or dist > 0.67 * dist_prev or 0 in keskmistamine:
+        #     keskmistamine.append(dist)
+        #     keskmistamine.pop(0)
+        #     #print(sum(keskmistamine)/len(keskmistamine))
+        #     dist_prev = dist
+        # else:
+        #     #print("värdmõõt" + str(dist))
+        #     pass
 
         # try:
         #     cnt = cont[0]

@@ -90,19 +90,29 @@ class imageCapRS2:
         h = self.h
         count = 0
         total = 0
+        distprev = 0
         try:
             # meaure the distance of every pixel of the blob size on half of its height throughout it's width
-            for z in range(w):
-                dist = self.depth_frame.get_distance(x + z, y + int(h/2))
-                if dist == 0.0:
-                    pass
-                else:
-                    total += dist
-                    count += 1
+            for z in range(int(self.w)):
+                for i in range(int(20)):
+                    dist = self.depth_frame.get_distance(self.x + z, int(self.y / 2) + i)
+                    # print(dist)
+                    if dist == 0.0:
+                        pass
+                    elif distprev == 0:
+                        distprev = dist
+                    elif dist > 1.2 * distprev:
+                        pass
+                    elif dist < 0.8 * distprev:
+                        pass
+                    else:
+                        total += dist
+                        count += 1
+                        distprev = dist
             # aritmethic average of all of the measurements
-            dist = total/count
-            self.distance = dist
-            return dist
+            self.distance = (total / count)
+
+            return self.distance
         except:
             print("Error in measuring distance from pixel")
             return 0.0

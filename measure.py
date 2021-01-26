@@ -8,7 +8,7 @@ import cv2
 ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
 
 width = 0
-speed = 130
+speed = 74
 values = [25, 25, 0, 65, 65, 65, 0, 170]
 # blue or magenta
 color = "blue"
@@ -19,16 +19,16 @@ info_shower = BallGet(first_frame).start()
 #omni2.startThrow(values, speed)
 read = 0
 recv = 0
+omni2.startThrow(values, speed)
 
 while True:
-    omni2.startThrow(values, speed)
 
     try:
-        recv = omni2.returnRecv()
-        if recv == 1:
-            for x in range(2000):
-                print("lendas!!!")
-            omni2.endThrow(values)
+        #recv = omni2.returnRecv()
+        #if recv == 1:
+            #for x in range(2000):
+            #    print("lendas!!!")
+            #omni2.endThrow(values)
         # while ser.inWaiting():
         #     read = ser.read()
         #     #print(read[len(read)-2])
@@ -47,7 +47,7 @@ while True:
         frame = video_getter.frame
         info_shower.frame = frame
         korv = info_shower.info2
-
+        print(korv[6],"korvi kõrgus")
 
         #print("iks: " + str(korv[0]))
         #print("ygrek: " + str(korv[1]))

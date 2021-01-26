@@ -7,13 +7,15 @@ from videoGet2 import imageCapRS2
 # Get color ranges and noise removal kernels from config
 ball_color_range = config.get("colors", config.get("vision", "ball_color"))
 ball_noise_kernel = config.get("vision", "ball_noise_kernel")
-#basket_color_range = config.get("colors", config.get("vision", "basket_color"))
+# basket_color_range = config.get("colors", config.get("vision", "basket_color"))
 edge_color_range = config.get("colors", config.get("vision", "bounds"))
 
 
 def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=None):
     #print(ball_color_range)
     #print(hsv)
+    height = 0
+    w, h, x2, y2 = 0,0,0,0
 
     basket_color_range = config.get("colors", config.get("vision", "basket_color"))
 
@@ -42,17 +44,14 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
     masked_img2 = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
     erosion = cv2.erode(masked_img2, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)
-    # erosion = cv2.erode(masked_img, kernel, iterations=1)
-    # dilation = cv2.dilate(erosion, kernel, iterations=1)
-    # dilation = masked_img
     cont, hie = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
     # Get blob contour coordinates
     try:
-        cnt = cont[0]
-        x, y, w, h = cv2.boundingRect(cnt)
+        cnt = max(cont, key=cv2.contourArea)
+        x2, y2, w, h = cv2.boundingRect(cnt)
         # Draw bounding rect to pic
-        cv2.rectangle(hsv, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        height = y2+h
+        cv2.rectangle(hsv, (x2, y2), (x2 + w, y2 + h), (0, 255, 0), 2)
     except:
         #print("unable to draw contours")
         pass
@@ -72,6 +71,8 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
             r = None
             w = None
             h = None
+            x2 = None
+            y2 = None
         count = 0
         if piir is not None:
             try:
@@ -88,6 +89,8 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
                         r = None
                         w = None
                         h = None
+                        x2 = None
+                        y2 = None
                         count = 0
                         return x, y, r, contour_img
             except:
@@ -104,15 +107,11 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
         r = None
         w = None
         h = None
+        x2 = None
+        y2 = None
 
-    """hsv = cv2.medianBlur(hsv, 5)
-    masked_img = cv2.inRange(hsv, ball_color_range["min"], ball_color_range["max"])
-    mask_basket = cv2.inRange(hsv, basket_color_range["min"], basket_color_range["max"])
-    kernel = np.ones(7) #11
-    masked_img = cv2.morphologyEx(masked_img, cv2.MORPH_OPEN, kernel)
-    mask_basket = cv2.morphologyEx(mask_basket, cv2.MORPH_OPEN, kernel)"""
     # Only return the blob of the largest objects of the same color
     #print(x,y)
-    return x, y, r, contour_img, w, h
+    return x, y, r, contour_img, w, h, height, x2, y2
 
 

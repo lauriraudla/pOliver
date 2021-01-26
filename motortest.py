@@ -1,6 +1,6 @@
 import serial
 from math import cos, sqrt, atan2, floor, radians
-values = [25, 25, 0, 60, 60, 60, 0, 170]
+values = [25, 25, 0, 65, 65, 65, 58, 170]
 
 try:
     ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)

@@ -25,7 +25,10 @@ def sendIt(values):
     ser.write(bytearray(values))
     while ser.inWaiting():
         msg = (ser.read())
-        recv = msg[len(msg) - 2]
+        try:
+            recv = msg[len(msg) - 2]
+        except:
+            pass
 
 def rotate(values, speed):
     values[3] = 65 + speed
@@ -162,7 +165,7 @@ def pidBallCenterForward(sisend, integral, derivative, err_prev):
     I = 0.015
     D = 0
     #print(sisend, err_prev)
-    if sisend < 500:
+    if sisend < 400:
         return -30
     #(1 - sisend/720)
     # sisend on error keskkohast
@@ -186,7 +189,7 @@ def pidBallCenterRotateSpeed(sisend, integral, derivative, err_prev, errors_arra
         D = 0
         #print(sisend, err_prev)
         # sisend on error keskkohast
-        error = 610 - sisend
+        error = 620 - sisend
         errors_array.append(error)
         errors_array.pop(0)
 
