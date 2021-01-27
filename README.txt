@@ -26,6 +26,10 @@ multithread2.py utilizes many included modules - InfoGet to process images, LUT.
 measurehack.py creates a while loop, where it processes the images gotten from the image thread x times, at the end of the cycle prints out the distance(realsense), some basket information and asks for input - what to do with thrower speed? + and - integers to change speed, 6.9 is a *float* and a special case - add current speed and basket distance to lists, and print out said lists
 Closing the program(q on the images, anything as input later) prints the full list of speeds/distances(/basket x location), for easy copying into LUT.py values. Fun fact: pressing enter without giving any input lets you quickly go through the for loop again for distance measurement - accidental feature from try-except!
 
+Some code we took from a github of a team from robotex 2019 - Quintus Maximus XII
+config.py is a simple config parser, couldn't find a better example of it on the internet
+vision.py contains logic for selecting what are we thresholding and returns blobs with important information - we used their version as a base and expanded on it to fit our needs, as our attempts at image processing needed a lot of rethinking(HoughCircles and stuff, took vision.py for reference and it did things a lot better than what we wrote, so we created a personalised form of it)
+
 Game logic:
 if go is true, means we are currently in a round and the rest of the logic works
 if there is no ball, spin
