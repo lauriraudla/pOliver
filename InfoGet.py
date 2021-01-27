@@ -33,7 +33,7 @@ class BallGet:
             #piir
             self.info3 = vision.apply_ball_color_filter(hsv, False, True, None)
             #pall
-            self.info = vision.apply_ball_color_filter(hsv, False, False, self.info2[1], self.info3[3])
+            self.info = vision.apply_ball_color_filter(hsv, False, False, self.info2[5], self.info3[3])
             #if self.basket:
             #    self.info = vision.apply_ball_color_filter(hsv,True)
             #print(self.info[0:2])

@@ -51,8 +51,8 @@ class imageCapRS2:
 
         self.pipeline = rs.pipeline()
         self.config = rs.config()
-        self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-        self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+        self.config.enable_stream(rs.stream.color, 848, 480, rs.format.bgr8, 60)
+        self.config.enable_stream(rs.stream.depth, 848, 480, rs.format.z16, 60)
         self.pipeline.start(self.config)
 
         self.align_to = rs.stream.depth
@@ -117,7 +117,7 @@ class imageCapRS2:
                         count += 1
                         distprev = dist
             # aritmethic average of all of the measurements
-            self.distance = (total / count)
+            self.distance = round(total / count, 2)
 
             return self.distance
         except:

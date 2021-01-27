@@ -6,14 +6,12 @@
 
 
 import cv2
-import json
 from functools import partial
 import numpy as np
-from VideoGet import VideoGet
 import config
 from videoGet2 import imageCapRS2
 from realsense_config import activate_rs_settings
-from InfoGet import BallGet
+
 width = 1280
 height = 720
 

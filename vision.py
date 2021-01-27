@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
-from threading import currentThread
-import config, config_basket
-from videoGet2 import imageCapRS2
+import config
 
 # Get color ranges and noise removal kernels from config
 ball_color_range = config.get("colors", config.get("vision", "ball_color"))
@@ -65,7 +63,9 @@ def apply_ball_color_filter(hsv, basket=False, bounds = False, korv=None, piir=N
         y = int(y)
         r = int(r)
         # print("vision color filter: ", (x, y), r)
-        if korv is not None and korv > 125:
+        print(korv)
+        if korv is not None and korv > 190:
+            print("liiga lähedal")
             x = None;
             y = None;
             r = None

@@ -66,7 +66,7 @@ def ballRotate(values, rearWheelSpeed, frontSideMovementSpeed, frontForwardSpeed
     values[3] = int(round(65 - frontSideMovementSpeed + (frontForwardSpeed * -1), 0))
     values[4] = int(round(65 - frontSideMovementSpeed + frontForwardSpeed, 0))
     values[5] = int(65 + round(rearWheelSpeed, 0))#demokraatia
-    print(values)
+    #print(values)
     sendIt(values)
 
 
@@ -75,7 +75,7 @@ def pid2(sisend, integral, derivative, err_prev):
     I = 0.00007
     D = 0
     # sisend on error keskkohast
-    error = 640 - sisend
+    error = 424 - sisend
     integral += error
     derivative = error - err_prev
     err_prev = error
@@ -88,13 +88,13 @@ def pidFrontWheelsSide(sisend):
     global intFWS
     global derFWS
     global errFWS
-    P = 0.015
+    P = 0.025
     I = 0.00004
     D = 0.006
     # integral = intFWS
     # print(sisend, err_prev)
     # sisend on error keskkohast
-    error = 630 - sisend
+    error = 424 - sisend
     intFWS += error * 0.1
     derFWS = error - errFWS
     errFWS = error
@@ -109,11 +109,11 @@ def pidFrontWheelsforward(sisend):
     P = 0.015
     I = 0.0000
     D = 0.035
-    if sisend < 400:
-        print("türannosaurus")
-        return -10
+    if sisend < 200:
+        #print("türannosaurus")
+        return -45
     # sisend on error keskkohast
-    error = 630 - sisend
+    error = 424 - sisend
     intFWF += error
     derFWF = error - errFWF
     errFWF = error
@@ -126,13 +126,13 @@ def pidRearWheelSpeed(sisend, errors_array):
     global intRWS, derRWS, errRWS
     if sisend is None or sisend == 0:
         reset("RWS")
-        return 20
+        return 45
     else:
-        P = 0.009
-        I = 0.000001
+        P = 0.025
+        I = 0.000006
         D = 0.00
         # sisend on error keskkohast
-        error = 675 - sisend
+        error = 455 - sisend
         errors_array.append(error)
         errors_array.pop(0)
 
@@ -202,7 +202,7 @@ def toBall(values,speed,ball, middle=None):#kus ball on 2 elemendiline array: X 
                                                mid_x, ball_X, ball_Y)
     values[4] = 65 + calculate_linear_velocity(speed, b_wheel_angle, movement_direction_forward,
                                                mid_x, ball_X, ball_Y)
-    print(values)
+    #print(values)
     sendIt(values)
 
 def calculate_linear_velocity(wheel_speed, wheel_angle, direction, mid_x=None, X=None, Y=None):

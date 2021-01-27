@@ -1,6 +1,6 @@
 import serial
 from math import cos, sqrt, atan2, floor, radians
-values = [10, 8, 0, 64, 64, 64, 0, 170]
+values = [10, 8, 0, 60, 60, 60, 40, 170]
 
 try:
     ser = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
@@ -50,6 +50,7 @@ while True:
         values[3] = 65
         values[4] = 65
         values[5] = 65
+        values[6] = 0
         write(values)
     else:
         break

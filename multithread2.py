@@ -12,13 +12,15 @@ from realsense_config import activate_rs_settings
 import numpy as np
 
 go = False
-robot = "pOliver"
+robot = "poliver"
 # Testvõistluse server
 #ws = websocket.create_connection('ws://192.168.2.220:8111/')
 # Server Sveni läpakas
-ws = websocket.create_connection('ws://192.168.2.64:8887/')
+ws = websocket.create_connection('ws://192.168.3.25:8887/')
 # Server Punamütsike
 #ws = websocket.create_connection('ws://192.168.2.13:8887/')
+# DeltaX server
+#ws = websocket.create_connection('ws://192.168.3.220:8111/')
 
 def threadBoth():
     global go
@@ -61,12 +63,13 @@ def threadBoth():
     time.sleep(0.1)
 
     # Mainboardile saadetav kiiruste muutujaid sisaldav array
-    values = [10, 8, 0, 65, 65, 65, 0, 170]
+    values = [10, 8, 0, 65, 65, 65, 30, 170]
 
     activate_rs_settings()
 
     errors_array = [99] * 100
     dummy_errors_array = [99] * 100
+    secondFlag = 0
     flag = 0
     go = ref.go
     #go = True
@@ -101,7 +104,7 @@ def threadBoth():
         # kui kohtunikult on tulnud start käsklus
         if go:
             try:
-                if ball[0] is not None and ball[1] > 20:
+                if ball[0] is not None and ball[1] > 10:
                     if ballFind == True:
                         omni2.stopAll(values)
                         ballFind = False
@@ -109,9 +112,9 @@ def threadBoth():
                     y = ball[1]
                     # print(ball)
                     if korv[0] is not None:
-                        if y < 400 and y is not None and y != 0:
+                        if y < 200 and y is not None and y != 0:
                             pid = omni2.pid2(x, integral, derivative, err_prev)
-                            omni2.toBall(values, 25, [pid, y])
+                            omni2.toBall(values, 45, [pid, y])
                         elif flag == 0:
                             omni2.ballRotate(values,
                                              -1 * omni2.pidRearWheelSpeed(korv[0], errors_array),
@@ -121,51 +124,63 @@ def threadBoth():
                         if all(abs(n) < 20 for n in errors_array) or flag == 1:
                             flag = 1
                             #print("alustan viskamist")
-                            if y < 600:
+
+                            if all(abs(n) > 20 for n in dummy_errors_array):
+                                #print("dummy")
+                                secondFlag = 1
+                                omni2.ballRotate(values,
+                                                 -1 * omni2.pidRearWheelSpeed(korv[0], dummy_errors_array),
+                                                 omni2.pidFrontWheelsSide(x),
+                                                 omni2.pidFrontWheelsforward(y))
+                            elif y < 380:
+                                #print("sven mine magama")
+                                secondFlag = 1
                                 omni2.ballRotate(values,
                                                  -1 * omni2.pidRearWheelSpeed(korv[0], dummy_errors_array),
                                                  omni2.pidFrontWheelsSide(x),
                                                  -5)
-                            else:
+                            elif secondFlag == 1:
+
                                 x = 0
                                 omni2.stopAll(values)
                                 time.sleep(0.1)
                                 # Viskamine kasutades realsense'i
-                                if len(distances) < 5:
+                                if len(distances) < 10:
                                     distance = video_getter.get_distance()
                                     if distance != 0:
                                         if distance is not None:
-                                            distances.append(distance)
+                                            distances.append((distance))
                                 else:
-                                    avg_distance = (sum(distances) / len(distances))
+                                    avg_distance = round(sum(distances) / len(distances), 2)
                                     speeds.append(avg_distance)
                                     distances = []
                                     avg_speed = (sum(speeds) / len(speeds))
-                                    kiirus = LUT.get_thrower_speed(avg_speed)
-                                    kiirus = int(kiirus * 1.01 + 1)
-                                    print(kiirus)
+                                    kiirus = LUT.get_thrower_speed(avg_distance)
+                                    #kiirus = avg_distance
+                                    kiirus = int(kiirus)
+                                    print(kiirus, korv[5])
                                     omni2.startThrow(values, kiirus)
                                     speeds = []
                                     # omni2.startThrow(values, int(int(LUT.get_thrower_speed(throw_dist))*1.1)-3)
                                     distances = []
-                                    while x < 2500:
+                                    while x < 2750:
                                         korv = info_shower.info2
                                         omni2.ballRotate(values,
                                                          0,
                                                          0,
-                                                         -3)
+                                                         -6)
                                         recv = omni2.returnRecv()
-                                        print(values)
+                                        #print(values)
                                         if recv == 1 and not thrown:
-                                            x = 2475
+                                            x = 1900
                                             thrown = True
                                         x += 1
                                     print("vise lõppes")
                                     thrown = False
-                                    print(errors_array)
+                                    #print(errors_array)
                                     errors_array = [99] * 100
                                     dummy_errors_array = [99] * 100
-                                    print(errors_array)
+                                    #print(errors_array)
                                     flag = 0
                                     omni2.endThrow(values)
 
@@ -184,9 +199,9 @@ def threadBoth():
                     #     omni2.toBall(values, 15, [pid, y])
 
                     #elif y > 440 and y is not None and y != 0:
-                    elif y < 400 and y is not None and y != 0:
+                    elif y < 200 and y is not None and y != 0:
                         pid = omni2.pid2(x, integral, derivative, err_prev)
-                        omni2.toBall(values,25, [pid,y])
+                        omni2.toBall(values,45, [pid,y])
                     else:
                         intRWS = 0
                         omni2.ballRotate(values,
@@ -197,7 +212,7 @@ def threadBoth():
                 else:
                     #print("otsin")
                     ballFind = True
-                    omni2.rotate(values, 7)
+                    omni2.rotate(values, 8)
                     time.sleep(0.3)
                     omni2.reset("FWS")
                     omni2.reset("FWF")
@@ -208,7 +223,7 @@ def threadBoth():
             except:
                 ballFind = True
                 #print("otsin2")
-                omni2.rotate(values, 7)
+                omni2.rotate(values, 8)
                 omni2.reset("FWS")
                 omni2.reset("FWF")
                 omni2.reset("RWS")
