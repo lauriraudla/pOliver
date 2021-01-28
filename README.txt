@@ -46,3 +46,16 @@ perform game logic
 repeat
 there are some try-except pairs to help address situations where we try to use ball or basket info when there is none available
 The threads run 100% separately from the main loop, we just use their values in the main loop to feed other threads new information. This form of threading allows us to reach ~300+ loop cycles a second, which is more than plenty to not bottleneck our code.
+
+
+The good:
+- Our code is suprisingly easy to run on the NUC and takes advantage of all the available threads. 
+- There are no bottlenecks on the code side that slow the code execution
+- Some pretty advanced moving logic, using several PID controllers for the wheel speed outputs, that have way more potential than what they were used for. 
+
+The bad: 
+- The code is almost impossible to read and is uncommented
+- Most of the code does not use OOP
+- It is difficult to change any parameters, due to not using a config file for them
+
+Game logic diagram is added as a PDF to the repo
