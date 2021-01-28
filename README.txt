@@ -58,4 +58,6 @@ The bad:
 - Most of the code does not use OOP
 - It is difficult to change any parameters, due to not using a config file for them
 
+The first improvement should be addressing everything that is bad, as that would make the code humane to work on.
+
 Game logic diagram is added as a PDF to the repo
